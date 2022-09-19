@@ -1,0 +1,106 @@
+@import "../../../../Colors.scss";
+
+.sortable-item-dragging {
+    background-color: white;
+    min-width: 100px;
+}
+
+.sortable-tab-selected {
+    background-color: $dark-turquoise !important;
+    color: white;
+}
+
+.sortable-tab {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    color: black;
+    margin: 1px;
+    height: 30px;
+    cursor: grab;
+    padding: 5px 15px;
+    border-radius: 30px;
+
+    i {
+        vertical-align: middle;
+        margin-bottom: 4px;
+        display: inline-block;
+        margin-right: 4px;
+        cursor: pointer;
+        background-color: white;
+        border-radius: 4px;
+        margin-left: 10px;
+        font-size: 14px;
+    }
+
+    span {
+        height: 100%;
+        padding-bottom: 2px;
+        display: inline-block;
+    }
+}
+
+.sortable-list {
+    user-select: none;
+    display: flex;
+    justify-content: flex-start;
+    padding: 3px;
+    border-radius: 40px;
+    background-color: rgb(245, 245, 245);
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+.page-content-pane {
+    min-height: 100%;
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+
+    .rich-text-editor {
+        flex: 1;
+        overflow-y: auto;
+        box-sizing: border-box;
+        cursor: text;
+        position: relative;
+    }
+}
+
+.notepad-editor {
+    min-height: calc(100% - 70px);
+    display: flex;
+    flex-flow: column;
+    height: calc(100% - 70px);
+
+    .rich-text-content {
+        padding: 10px;
+    }
+
+    .k-animation-container {
+        height: 100%;
+        width: 100%;
+    }
+
+    .k-widget {
+        flex: 1;
+        overflow-y: auto;
+        box-sizing: border-box;
+        cursor: text;
+        position: relative;
+
+        .k-link {
+            color: black;
+        }
+    }
+
+    li.k-state-active::before {
+        background-color: $blue;
+        height: 3px;
+        width: 100%;
+        position: absolute;
+        content: " ";
+        border-top-right-radius: 3px;
+        border-top-left-radius: 3px;
+    }
+}

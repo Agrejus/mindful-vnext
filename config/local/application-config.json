@@ -1,0 +1,10 @@
+{
+  "loginUrl": "https://loginci.kordev.net",
+  "launchDarklyClientSideId": "60d1f8bb7d94380d465dfa15",
+  "instanceName": "LOCAL",
+  "usersnapProjectApiKey" : "4a9abe0f-9c2c-42c5-a00f-9df433989b6a",
+  "usersnapGlobalApiKey" : "551d84b9-6e91-4c1e-8145-2d37317d8255",
+  "oauthClientId": "29369a20-c1a6-4f65-b3c8-b824e761f96d",
+  "oauthProvider": "https://auth.kordev.net/as",
+  "scopes": ["openid", "profile", "KTWS"]
+}

@@ -1,0 +1,20 @@
+{
+  "appId": "com.korterra.field",
+  "appName": "KorTerra Field",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "build",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true
+    },
+    "Keyboard": {
+      "resize": "none"
+    }
+  },
+  "android":{},
+  "ios":{
+    "minVersion":12
+  }
+}

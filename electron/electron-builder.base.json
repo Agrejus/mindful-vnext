@@ -1,0 +1,40 @@
+{
+	"appId": "com.korterra.field",
+	"productName": "KorTerra Field",
+	"mac": {
+		"category": "public.app-category.business",
+		"target": [
+			"zip",
+			"dmg"
+		],
+		"darkModeSupport": true
+	},
+	"publish": [
+		{
+			"provider": "generic",
+			"url": "https://ktfieldupdatesstage.blob.core.windows.net/updates/vannguard/latest"
+		}
+	],
+	"nsis": {
+		"deleteAppDataOnUninstall": true,
+		"perMachine": true
+	},
+	"directories": {
+		"output": "dist/${os}"
+	},
+	"files": [
+		"./**/*"
+	],
+	"extraResources": [
+		{
+			"from": "./workers/",
+			"to": "workers",
+			"filter": [
+				"**/*"
+			]
+		}
+	],
+	"asarUnpack": [
+		"./node_modules/electron-message-broker"
+	]
+}

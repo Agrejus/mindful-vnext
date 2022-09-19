@@ -1,0 +1,51 @@
+{
+	"name": "mindfill",
+	"description": "Landfill for your mind",
+	"author": "James DeMeuse",
+	"version": "0.1.0",
+	"private": true,
+	"homepage": "./",
+	"main": "index.js",
+	"scripts": {
+		"build": "node ../electron-build/index.js",
+		"clean": "rm -rf node_modules",
+		"reinstall": "npm run clean && npm install",
+		"rebuild": "npm run clean && npm install && npm run build",
+		"start:serve": "cross-env ELECTRON_ENV=serve electron ./",
+		"start:native": "cross-env ELECTRON_ENV=native electron ./",
+		"dist:mac": "electron-builder -m",
+		"dist:win": "electron-builder -w",
+		"dist:linux": "electron-builder -l",
+		"dist:all": "electron-builder -mw",
+		"set-vars:local": "cross-env PUBLISH_URL=http://localhost:17957 ELECTRON_WIN_TARGET=appx ELECTRON_APPX_PUBLISHER_DISPLAY_NAME=JamesDemeuse",
+		"set-vars:dev": "cross-env PUBLISH_URL=https://loginci.kordev.net ELECTRON_NSIS_DELETE_APP_DATA_ON_UNINSTALL=true ELECTRON_NSIS_PER_MACHINE=true",
+		"set-vars:stage": "cross-env PUBLISH_URL=https://loginci.kordev.net ELECTRON_MAC_TYPE=development ELECTRON_NSIS_ONE_CLICK=false ELECTRON_NSIS_DELETE_APP_DATA_ON_UNINSTALL=true ELECTRON_NSIS_PER_MACHINE=true ELECTRON_DIRECTORIES_OUTPUT=dist/$%7Bos%7D",
+		"set-vars:prod": "cross-env PUBLISH_URL=https://loginci.kordev.net",
+		"print-vars": "node ../deploy/print-node-vars.js",
+		"config-transform": "node ./transform/index.js --decode",
+		"config-transform:local": "npm run set-vars:local npm run config-transform",
+		"config-transform:dev": "npm run set-vars:dev npm run config-transform",
+		"config-transform:stage": "npm run set-vars:stage npm run config-transform",
+		"config-transform:prod": "npm run set-vars:prod npm run config-transform"
+	},
+	"dependencies": {
+		"@capacitor-community/electron": "^4.1.0",
+		"@electron/remote": "^2.0.4",
+		"debounce": "^1.2.1",
+		"electron-is-dev": "^2.0.0",
+		"electron-log": "^4.4.6",
+		"electron-updater": "^4.6.5",
+		"nanoid": "^3.3.2",
+		"node-fetch": "^2.6.0",
+		"open": "^7.0.0",
+		"pouchdb": "^7.3.0",
+		"pouchdb-find": "^7.3.0"
+	},
+	"devDependencies": {
+		"cross-env": "^7.0.3",
+		"electron": "17.0.1",
+		"electron-builder": "22.10.5"
+	},
+	"keywords": [],
+	"license": "ISC"
+}

@@ -1,0 +1,10 @@
+{
+  "loginUrl": "https://www.korweb.com",
+  "launchDarklyClientSideId": "608adebd17a57e0c2fa00715",
+  "instanceName": "PRODUCTION",
+  "usersnapProjectApiKey" : "7dac8c3a-a779-406b-861b-cfab86a6e8d2",
+  "usersnapGlobalApiKey" : "551d84b9-6e91-4c1e-8145-2d37317d8255",
+  "oauthClientId": "828a084d-a646-4c98-9b91-7c76c79796ab",
+  "oauthProvider": "https://auth.korterra.net/as",
+  "scopes": ["openid", "profile", "KTWS"]
+}
