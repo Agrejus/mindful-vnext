@@ -3,12 +3,11 @@ import { getDisplayName, render } from '../../../../shared-components/editors';
 import { allWidgets, isAllowed } from '../../../../widgets/section-widget';
 import { AddWidgetModal } from '../../../../shared-components/modal/AddWidgetModal';
 import { HoverExpandButton } from '../../../../shared-components/buttons/HoverExpandButton';
-import { useDispatch, useSelector } from 'react-redux';
 import * as pageActions from '../../../../redux/actions/PageActions';
 import * as pageReducer from '../../../../redux/reducers/PageReducer';
 import * as sectionReducer from '../../../../redux/reducers/SectionReducer';
 import moment from 'moment';
-
+import { useAppDispatch, useAppSelector } from '../../../../redux/store';
 interface IContentProps {
 
 }
@@ -16,9 +15,9 @@ interface IContentProps {
 export const Content: React.FunctionComponent<IContentProps> = (props) => {
     const [isWdigetModalVisible, setIsWdigetModalVisible] = useState(false);
 
-    const section = useSelector(sectionReducer.getSelectedSection);
-    const page = useSelector(pageReducer.getSelectedPage);
-    const dispatch = useDispatch();
+    const section = useAppSelector(sectionReducer.getSelectedSection);
+    const page = useAppSelector(pageReducer.getSelectedPage);
+    const dispatch = useAppDispatch();
     const onContentChange = (content: any) => dispatch(pageActions.onContentChage(content));
 
     const onAddWidgetClick = () => {

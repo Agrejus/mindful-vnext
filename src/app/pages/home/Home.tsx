@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Portal } from '../../shared-components/modal/Portal';
 import { Pane } from '../../shared-components/panes/Pane';
 import { SplitPane } from '../../shared-components/panes/SplitPane';
@@ -10,24 +10,8 @@ import { SubHeader, ToolType } from './sub-components/SubHeader';
 import { Search } from './sub-components/Search';
 import './Home.scss';
 import '../../../../node_modules/@progress/kendo-theme-default/dist/all.scss';
-import { IPage, PageType } from '../../data-access/entities/Page';
-import { useMindfulDataContext } from '../../providers/MindfulDataContextProvider';
-import { ISection, IWidget } from '../../data-access/entities/Section';
-import moment from 'moment';
-import { sort } from 'radash'
-import { SortableOnDragOverEvent } from '@progress/kendo-react-sortable';
 import { CSharpToTypescript } from '../../shared-components/tools/c-sharp-to-typescript/CSharpToTypescript';
 import { JsonPrettyPrint } from '../../shared-components/tools/json-pretty-print/JsonPrettyPrint';
-import { DataSource } from '../../../utilities/DataSource';
-import { getDefaultContent, render, stringify } from '../../shared-components/editors';
-import { TreeNode } from 'react-draggable-tree';
-import { debounce, throttle } from 'radash'
-import { getPages, getSelectedPage } from '../../redux/reducers/PageReducer';
-import { getSections, getSelectedSection } from '../../redux/reducers/SectionReducer';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../redux/store';
-import * as pageActions from '../../redux/actions/PageActions';
-import * as sectionActions from '../../redux/actions/SectionActions';
 
 interface IHomeProps {
 

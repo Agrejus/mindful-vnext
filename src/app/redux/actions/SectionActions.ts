@@ -3,7 +3,7 @@ import { ISection } from "../../data-access/entities/Section";
 import { AsyncThunkConfig } from "../store";
 import * as sectionReducer from "../reducers/SectionReducer";
 import * as pageReducer from "../reducers/PageReducer";
-import { debounce, select, sort, throttle } from "radash";
+import { debounce, throttle } from "radash";
 import { MindfulDataContextFactory } from "../../data-access/MindfulDataContext";
 import moment from "moment";
 
@@ -38,8 +38,7 @@ export const selectSection = createAsyncThunk<void, string, AsyncThunkConfig>("s
 
     dispatch(sectionReducer.setIsSaving(true));
 
-
-    const clonedSections = [...data];
+    const clonedSections = [...data].map(w => ({ ...w }));
     let index = -1;
     clonedSections.forEach((w, i) => {
         if (w._id === id) {
@@ -51,7 +50,7 @@ export const selectSection = createAsyncThunk<void, string, AsyncThunkConfig>("s
         w.isSelected = false
     });
 
-    dispatch(sectionReducer.changes(clonedSections));
+    dispatch(sectionReducer.setAll(clonedSections));
 
     updateSectionsDebounced(dbContextFactory, clonedSections, () => {
         dispatch(sectionReducer.setIsSaving(false));
@@ -59,17 +58,17 @@ export const selectSection = createAsyncThunk<void, string, AsyncThunkConfig>("s
 
     if (index != -1) {
 
-        dispatch(sectionReducer.select({ ...clonedSections[index] }));
+        dispatch(sectionReducer.setSelected({ ...clonedSections[index] }));
 
         const context = dbContextFactory();
         const sectionPages = await context.pages.filter(w => w.sectionId === id);
         const selectedPage = sectionPages.find(w => w.isSelected === true);
 
         if (selectedPage != null) {
-            dispatch(pageReducer.select(selectedPage));
+            dispatch(pageReducer.setSelected(selectedPage));
         }
 
-        dispatch(pageReducer.changes(sectionPages));
+        dispatch(pageReducer.setAll(sectionPages));
     }
 });
 
@@ -114,10 +113,10 @@ export const create = createAsyncThunk<void, string, AsyncThunkConfig>("create",
 
     const all = await context.sections.all();
 
-    dispatch(sectionReducer.changes(all));
-    dispatch(sectionReducer.select(newSection));
-    dispatch(pageReducer.select(undefined));
-    dispatch(pageReducer.changes([]));
+    dispatch(sectionReducer.setAll(all));
+    dispatch(sectionReducer.setSelected(newSection));
+    dispatch(pageReducer.setSelected(undefined));
+    dispatch(pageReducer.setAll([]));
 });
 
 export const deleteSection = createAsyncThunk<void, string, AsyncThunkConfig>("deleteSection", async (id: string, thunkApi) => {
@@ -136,12 +135,12 @@ export const deleteSection = createAsyncThunk<void, string, AsyncThunkConfig>("d
 
     const allSections = await context.sections.all();
 
-    dispatch(sectionReducer.changes(allSections));
+    dispatch(sectionReducer.setAll(allSections));
 
     if (selected != null && selected._id === id) {
-        dispatch(pageReducer.select(undefined));
-        dispatch(pageReducer.changes([]));
-        dispatch(sectionReducer.select(undefined));
+        dispatch(pageReducer.setSelected(undefined));
+        dispatch(pageReducer.setAll([]));
+        dispatch(sectionReducer.setSelected(undefined));
     }
 });
 
@@ -159,10 +158,10 @@ export const changeSection = createAsyncThunk<void, ISection, AsyncThunkConfig>(
     shallow[index] = section;
 
     if (section._id === selected?._id) {
-        dispatch(sectionReducer.select(section));
+        dispatch(sectionReducer.setSelected(section));
     }
 
-    dispatch(sectionReducer.changes(shallow));
+    dispatch(sectionReducer.setAll(shallow));
 
     updateSectionsDebounced(dbContextFactory, shallow, () => {
         dispatch(sectionReducer.setIsSaving(false));

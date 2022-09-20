@@ -16,10 +16,10 @@ export const StoreConfigurator: React.FunctionComponent<ReduxStoreProps> = (prop
     const dbContextFactory = useMindfulDataContext();
     const dispatch = useDispatch();
 
-    const setSections = (sections: ISection[]) => dispatch(sectionReducer.changes(sections));
-    const setSelectedSection = (section: ISection) => dispatch(sectionReducer.select(section));
-    const setPages = (pages: IPage[]) => dispatch(pageReducer.changes(pages));
-    const setSelectedPage = (page: IPage) => dispatch(pageReducer.select(page));
+    const setSections = (sections: ISection[]) => dispatch(sectionReducer.setAll(sections));
+    const setSelectedSection = (section: ISection) => dispatch(sectionReducer.setSelected(section));
+    const setPages = (pages: IPage[]) => dispatch(pageReducer.setAll(pages));
+    const setSelectedPage = (page: IPage) => dispatch(pageReducer.setSelected(page));
 
     useEffect(() => {
 

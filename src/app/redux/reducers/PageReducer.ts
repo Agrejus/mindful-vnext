@@ -4,6 +4,7 @@ import type { RootState } from '../store'
 import { IPage } from '../../data-access/entities/Page'
 import { DataSource } from '../../../utilities/DataSource';
 import { Markers } from '../types';
+import { onContentChage } from '../actions/PageActions';
 
 // Define a type for the slice state
 export interface PageState {
@@ -32,11 +33,11 @@ export const pageSlice = createSlice({
 
             state.data = shallow;
         },
-        changes: (state, action: PayloadAction<IPage[]>) => {
+        setAll: (state, action: PayloadAction<IPage[]>) => {
             state.data = DataSource.fromArray("_id", action.payload)
         },
-        select: (state, action: PayloadAction<IPage | undefined>) => {
-            state.selected = action.payload
+        setSelected: (state, action: PayloadAction<IPage | undefined>) => {
+            state.selected = action.payload != null ? { ...action.payload } : undefined;
         },
         setIsDirtyId: (state, action: PayloadAction<{ isDirty: boolean, id: string }>) => {
 
@@ -45,7 +46,7 @@ export const pageSlice = createSlice({
                 return;
             }
 
-            const markers = {...state.dirtyMarkers}
+            const markers = { ...state.dirtyMarkers }
             delete markers[action.payload.id];
 
             state.dirtyMarkers = markers;
@@ -56,24 +57,24 @@ export const pageSlice = createSlice({
                 return;
             }
 
-            const markers = {...state.savingMarkers}
+            const markers = { ...state.savingMarkers }
             delete markers[action.payload.id];
 
             state.savingMarkers = markers;
         }
     },
-    // extraReducers: builder => {
-    //     builder.addCase(setPages.pending, (state, action) => {
-    //         state.isSaving = true;
-    //     }).addCase(setPages.fulfilled, (state, action) => {
-    //         state.isSaving = false;
-    //     }).addCase(setPages.rejected, (state, action) => {
-    //         state.isSaving = false;
-    //     })
-    // }
+    extraReducers: builder => {
+        builder.addCase(onContentChage.pending, (state, action) => {
+
+        }).addCase(onContentChage.fulfilled, (state, action) => {
+
+        }).addCase(onContentChage.rejected, (state, action) => {
+
+        })
+    }
 })
 
-export const { changes, select, setIsLoading, setIsDirtyId, setOne } = pageSlice.actions
+export const { setAll, setSelected, setIsLoading, setIsDirtyId, setOne } = pageSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 

@@ -1,13 +1,16 @@
 import { AnyAction, createAsyncThunk, ThunkAction } from "@reduxjs/toolkit";
 import moment from "moment";
 import { debounce, throttle } from "radash";
-import { TreeNode } from "react-draggable-tree";
+import { TreeNode, TreeRowInfo } from "react-draggable-tree";
 import { DataSource } from "../../../utilities/DataSource";
 import { IPage, PageType } from "../../data-access/entities/Page";
+import { ISection } from "../../data-access/entities/Section";
 import { MindfulDataContextFactory } from "../../data-access/MindfulDataContext";
 import { getDefaultContent } from "../../shared-components/editors";
 import * as pageReducer from "../reducers/PageReducer";
+import * as sectionReducer from "../reducers/SectionReducer";
 import { AsyncThunkConfig, RootState, ThunkExtraArgs } from "../store";
+import { updateSectionsDebounced } from "./SectionActions";
 
 const updatePagesDebounced = debounce({ delay: 1500 }, throttle({ interval: 1500 }, async (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => {
     const context = dbContextFactory();
@@ -86,7 +89,7 @@ export const create = createAsyncThunk<void, CreatePageProps, AsyncThunkConfig>(
     await context.saveChanges();
     const final = await context.pages.all()
 
-    dispatch(pageReducer.changes(final));
+    dispatch(pageReducer.setAll(final));
 });
 
 export const selectPage = createAsyncThunk<void, string, AsyncThunkConfig>("selectPage", async (id: string, thunkApi) => {
@@ -101,29 +104,33 @@ export const selectPage = createAsyncThunk<void, string, AsyncThunkConfig>("sele
         return;
     }
 
+    const clonedSection = { ...selectedSection }
+
     dispatch(pageReducer.setIsLoading({ isSaving: true, id }))
 
-    const changedPages = data.all();
+    const changedPages = data.all().map(w => ({ ...w }));
     const selectedKeys: string[] = []
 
     for (let page of changedPages) {
         if (page._id === id) {
             selectedKeys.push(id);
             page.isSelected = true;
-            dispatch(pageReducer.select(page))
+            dispatch(pageReducer.setSelected(page))
             continue;
         }
 
         page.isSelected = false;
     }
 
-    selectedSection.selectedKeys = selectedKeys;
+    clonedSection.selectedKeys = selectedKeys;
 
     updatePagesDebounced(dbContextFactory, changedPages, () => {
         dispatch(pageReducer.setIsLoading({ isSaving: false, id }))
     });
 
-    dispatch(pageReducer.changes(changedPages));
+    updateSectionsDebounced(dbContextFactory, [clonedSection], () => { });
+
+    dispatch(pageReducer.setAll(changedPages));
 });
 
 export const onContentChage = createAsyncThunk<void, any, AsyncThunkConfig>("onContentChage", async (content: any, thunkApi) => {
@@ -168,7 +175,7 @@ export const onContentChage = createAsyncThunk<void, any, AsyncThunkConfig>("onC
     // }
 
     dispatch(pageReducer.setOne(page));
-    dispatch(pageReducer.select(page));
+    dispatch(pageReducer.setSelected(page));
 
 
     updatePagesDebounced(dbContextFactory, [page], () => {
@@ -192,7 +199,7 @@ export const onPagesChange = createAsyncThunk<void, IPage[], AsyncThunkConfig>("
         const selected = dataSource.get(selectedPage._id)
 
         if (p.set(selected)) {
-            dispatch(pageReducer.select(selected));
+            dispatch(pageReducer.setSelected(selected));
 
             updatePagesDebounced(dbContextFactory, [selected], () => {
                 dispatch(pageReducer.setIsLoading({ isSaving: false, id: selectedPage._id }))
@@ -200,7 +207,7 @@ export const onPagesChange = createAsyncThunk<void, IPage[], AsyncThunkConfig>("
         }
     }
 
-    dispatch(pageReducer.changes(p.all()));
+    dispatch(pageReducer.setAll(p.all()));
 });
 
 export const onDeletePage = createAsyncThunk<void, IPage, AsyncThunkConfig>("onDeletePage", async (page: IPage, thunkApi) => {
@@ -252,3 +259,55 @@ export const onDeletePage = createAsyncThunk<void, IPage, AsyncThunkConfig>("onD
     // }
 });
 
+
+export type OnSelectedKeysChangeProps = { selectedKeys: Set<string>, selectedInfos: TreeRowInfo[] }
+export const onSelectedKeysChange = createAsyncThunk<void, OnSelectedKeysChangeProps, AsyncThunkConfig>("onSelectedKeysChange", async (props: OnSelectedKeysChangeProps, thunkApi) => {
+
+    const { dispatch, extra, getState } = thunkApi;
+    const { dbContextFactory } = extra;
+    const { sections, pages } = getState();
+    const { selected: selectedSection, data: allSections } = sections;
+    const { selected: selectedPage, data: allPages } = pages;
+    const clonedSections = allSections.map(w => ({ ...w } as ISection));
+
+    if (allPages == null || allPages.length === 0 || selectedSection == null) {
+        return;
+    }
+
+    const clonedSelectedSection = {...selectedSection};
+    const { selectedKeys, selectedInfos } = props;
+    const keys = selectedKeys.size > 0 ? [selectedKeys.values().next().value] : [];
+    const changes: IPage[] = [];
+
+    allPages.forEach(w => {
+        if (!w.isSelected) {
+            return;
+        }
+
+        w.isSelected = false;
+        changes.push(w);
+    })
+
+    if (selectedKeys.size === 1) {
+        const key = selectedKeys.values().next().value;
+        const page = allPages.get(key);
+
+        page.isSelected = true;
+
+        if (changes.some(w => w._id === page._id) === false) {
+            changes.push(page)
+        }
+    }
+
+    clonedSelectedSection.selectedKeys = keys;
+    const index = clonedSections.findIndex(w => w.isSelected === true);
+    clonedSections[index] = clonedSelectedSection;
+
+    dispatch(pageReducer.setAll(allPages.all()));
+    dispatch(sectionReducer.setAll(clonedSections));
+    dispatch(sectionReducer.setSelected(clonedSelectedSection));
+
+    // updatePagesDebounced(dbContextFactory, changedPages, () => { });
+
+    // updateSectionsDebounced(dbContextFactory, [clonedSection], () => { });
+});

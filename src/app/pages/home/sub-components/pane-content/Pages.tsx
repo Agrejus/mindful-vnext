@@ -12,8 +12,8 @@ import * as pageActions from '../../../../redux/actions/PageActions';
 import * as sectionActions from '../../../../redux/actions/SectionActions';
 import * as pageReducer from '../../../../redux/reducers/PageReducer';
 import * as sectionReducer from '../../../../redux/reducers/SectionReducer';
-import { useDispatch, useSelector } from 'react-redux';
 import { DataSource } from '../../../../../utilities/DataSource';
+import { useAppDispatch, useAppSelector } from '../../../../redux/store';
 
 interface IPagesProps {
 
@@ -28,15 +28,16 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
     const inputElement = useRef<HTMLInputElement | null>(null);
     const [value, setValue] = useState<string>('');
 
-    const pages = useSelector(pageReducer.getPages);
-    const parent = useSelector(sectionReducer.getSelectedSection);
-    const dispatch = useDispatch();
+    const pages = useAppSelector(pageReducer.getPages);
+    const parent = useAppSelector(sectionReducer.getSelectedSection);
+    const dispatch = useAppDispatch();
 
     const onCreate = (name: string, type: PageType) => dispatch(pageActions.create({ name, type }));
     const onSelect = (id: string) => dispatch(pageActions.selectPage(id));
     const onSectionChange = (section: ISection) => dispatch(sectionActions.changeSection(section));
     const onChange = (dataSource: DataSource<IPage>) => dispatch(pageActions.onPagesChange(dataSource.all()));
     const onDelete = (page: IPage) => dispatch(pageActions.onDeletePage(page));
+    const onSelectedKeysChange = (selectedKeys: Set<string>, selectedInfos: TreeRowInfo[]) => dispatch(pageActions.onSelectedKeysChange({ selectedInfos, selectedKeys }));
 
     useEffect(() => {
 
@@ -169,40 +170,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         await onSectionChange(parent);
     }
 
-    const onSelectedKeysChange = async (selectedKeys: Set<string>, selectedInfos: TreeRowInfo[]) => {
-
-        if (pages == null) {
-            return;
-        }
-
-        const keys = selectedKeys.size > 0 ? [selectedKeys.values().next().value] : [];
-        const changes: IPage[] = [];
-
-        pages.forEach(w => {
-            if (!w.isSelected) {
-                return;
-            }
-
-            w.isSelected = false;
-            changes.push(w);
-        })
-
-        if (selectedKeys.size === 1) {
-            const key = selectedKeys.values().next().value;
-            const page = pages.get(key);
-
-            page.isSelected = true;
-
-            if (changes.some(w => w._id === page._id) === false) {
-                changes.push(page)
-            }
-        }
-
-        parent.selectedKeys = keys;
-
-        await onChange(pages);
-        await onSectionChange(parent);
-    }
+   
 
     const onSavePage = async (page: IPage, name: string) => {
 
@@ -219,7 +187,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
     }
 
     const onCreateNewPage = async (name: string, type: PageType) => {
-        onCreate(name, type);
+        await onCreate(name, type);
         setNewPageType(null);
     }
 

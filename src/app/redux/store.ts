@@ -1,5 +1,6 @@
 
-import { configureStore, ThunkAction, Action, combineReducers, Dispatch, Middleware, ThunkDispatch, AnyAction, applyMiddleware } from '@reduxjs/toolkit';
+import { configureStore, ThunkAction, Action, combineReducers, Dispatch, Middleware, ThunkDispatch, AnyAction } from '@reduxjs/toolkit';
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { dbContextFactory, MindfulDataContextFactory } from '../data-access/MindfulDataContext';
 import pages from './reducers/PageReducer';
 import sections from './reducers/SectionReducer';
@@ -21,7 +22,7 @@ const loggerMiddleware: Middleware<{}, unknown, ThunkDispatch<unknown, unknown, 
 
 export const store = configureStore({
     reducer: rootReducer,
-    middleware: getDefaultMiddleware => [...getDefaultMiddleware({ thunk: { extraArgument: { dbContextFactory } }, serializableCheck: false }), loggerMiddleware],
+    middleware: getDefaultMiddleware => getDefaultMiddleware({ thunk: { extraArgument: { dbContextFactory } }, serializableCheck: false }).concat(loggerMiddleware),
 });
 
 export type ThunkExtraArgs = { dbContextFactory: MindfulDataContextFactory }
@@ -38,3 +39,6 @@ export type AsyncThunkConfig = {
     fulfilledMeta?: unknown;
     rejectedMeta?: unknown;
 }
+
+export const useAppDispatch = () => useDispatch<AppDispatch>()
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector

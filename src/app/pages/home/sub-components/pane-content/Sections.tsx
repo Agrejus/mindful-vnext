@@ -8,9 +8,9 @@ import { RenameModal } from '../../../../shared-components/modal/RenameModal';
 import { ChangeSectionColorModal } from '../../../../shared-components/modal/ChangeSectionColorModal';
 import { SectionListItem } from './sub-components/SectionListItem';
 import { ContextMenuOptions } from './sub-components/SectionButton';
-import { useDispatch, useSelector } from 'react-redux';
 import * as sectionActions from '../../../../redux/actions/SectionActions';
 import * as sectionReducer from '../../../../redux/reducers/SectionReducer';
+import { useAppDispatch, useAppSelector } from '../../../../redux/store';
 
 interface ISectionsProps {
 
@@ -24,15 +24,15 @@ export const Sections: React.FunctionComponent<ISectionsProps> = (props) => {
     const [changeColorSection, setChangeColorSection] = useState<ISection | null>(null);
     const [settingsSection, setSettingsSection] = useState<ISection | null>(null);
 
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const onCreate = (name: string) => dispatch(sectionActions.create(name));
     const onDelete = (id: string) => dispatch(sectionActions.deleteSection(id));
-    const onChangeSections = (sections: ISection[]) => dispatch(sectionReducer.changes(sections));
+    const onChangeSections = (sections: ISection[]) => dispatch(sectionReducer.setAll(sections));
     const onSelect = (id: string) => dispatch(sectionActions.selectSection(id));
     const onChange = (section: ISection) => dispatch(sectionActions.changeSection(section));
 
-    const sections = useSelector(sectionReducer.getSections);
+    const sections = useAppSelector(sectionReducer.getSections);
 
     const onCreateSection = async (name: string) => {
         onCreate(name);
@@ -51,6 +51,8 @@ export const Sections: React.FunctionComponent<ISectionsProps> = (props) => {
     }
 
     const handleDeleteSection = async (type: ButtonType, id: string) => {
+
+        const x = await dispatch(sectionActions.create(""));
 
         if (type === 'Yes') {
             onDelete(id);

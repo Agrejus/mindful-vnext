@@ -22,11 +22,11 @@ export const sectionSlice = createSlice({
     name: 'sections',
     initialState,
     reducers: {
-        changes: (state, action: PayloadAction<ISection[]>) => {
+        setAll: (state, action: PayloadAction<ISection[]>) => {
             state.data = [...sort(action.payload, w => w.order)]
         },
-        select: (state, action: PayloadAction<ISection | undefined>) => {
-            state.selected = action.payload
+        setSelected: (state, action: PayloadAction<ISection | undefined>) => {
+            state.selected = action.payload == null ? undefined : { ...action.payload } as ISection
         },
         setIsSaving: (state, action: PayloadAction<boolean>) => {
             state.isSaving = action.payload
@@ -34,10 +34,10 @@ export const sectionSlice = createSlice({
     },
 })
 
-export const { changes, select, setIsSaving } = sectionSlice.actions
+export const { setAll, setSelected, setIsSaving } = sectionSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 export const getSelectedSection = createSelector((state: RootState) => state.sections, w => w.selected);
-export const getSections = createSelector((state: RootState) => state.sections, w => w.data);
+export const getSections = createSelector((state: RootState) => state.sections, w => w.data.map(w => ({ ...w })));
 
 export default sectionSlice.reducer
