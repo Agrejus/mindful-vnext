@@ -10,20 +10,34 @@ import { getDefaultContent } from "../../shared-components/editors";
 import * as pageReducer from "../reducers/PageReducer";
 import * as sectionReducer from "../reducers/SectionReducer";
 import { AsyncThunkConfig, RootState, ThunkExtraArgs } from "../store";
-import { updateSectionsDebounced } from "./SectionActions";
+import { saveSections } from "./SectionActions";
 
-const updatePagesDebounced = debounce({ delay: 1500 }, throttle({ interval: 1500 }, async (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => {
-    const context = dbContextFactory();
+const debounced: { [key: string]: UpdatePages } = {}
 
-    const s = performance.now()
-    // const linked = await context.pages.link(page);
-    // await context.pages.markDirty(...linked);
-    await context.pages.upsert(...pages);
-    await context.saveChanges();
-    const e = performance.now();
-    console.log('updatePagesDebounced', e - s)
-    done();
-}))
+type UpdatePages = (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => void
+export const savePages: UpdatePages = (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => {
+    const key = pages.map(w => w._id).join("_");
+    if (debounced[key] == null) {
+        debounced[key] = debounce({ delay: 1500 }, throttle({ interval: 1500 }, async (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => {
+            const key = pages.map(w => w._id).join("_");
+            delete debounced[key];
+            console.log('debounced', debounced)
+            const context = dbContextFactory();
+
+            const s = performance.now()
+            const linked = await context.pages.link(...pages);
+            await context.pages.markDirty(...linked);
+            // await context.pages.upsert(...pages);
+            await context.saveChanges();
+            const e = performance.now();
+            console.log('updatePagesDebounced', e - s);
+            done();
+        }));
+    }
+
+    debounced[key](dbContextFactory, pages, done);
+}
+
 
 const createRoot = (dictionary: DataSource<IPage>): TreeNode => {
 
@@ -53,7 +67,7 @@ const toTreeNode = (item: IPage, dictionary: DataSource<IPage>): TreeNode => {
 }
 
 export type CreatePageProps = { name: string, type: PageType }
-export const create = createAsyncThunk<void, CreatePageProps, AsyncThunkConfig>("setSelectedPage", async (props: CreatePageProps, thunkApi) => {
+export const onCreatePage = createAsyncThunk<void, CreatePageProps, AsyncThunkConfig>("setSelectedPage", async (props: CreatePageProps, thunkApi) => {
 
     const { dispatch, extra, getState } = thunkApi;
     const { dbContextFactory } = extra;
@@ -80,7 +94,8 @@ export const create = createAsyncThunk<void, CreatePageProps, AsyncThunkConfig>(
         children: [],
         isCollapsed: true,
         pageGroupId: -1,
-        isContextMenuVisible: false
+        isContextMenuVisible: false,
+        savedDateTime: moment().format()
     });
 
     const dataSource = data.shallow();
@@ -90,6 +105,7 @@ export const create = createAsyncThunk<void, CreatePageProps, AsyncThunkConfig>(
     const final = await context.pages.all()
 
     dispatch(pageReducer.setAll(final));
+    dispatch(sectionReducer.setSelected({ ...linkedSection }));
 });
 
 export const selectPage = createAsyncThunk<void, string, AsyncThunkConfig>("selectPage", async (id: string, thunkApi) => {
@@ -124,16 +140,16 @@ export const selectPage = createAsyncThunk<void, string, AsyncThunkConfig>("sele
 
     clonedSection.selectedKeys = selectedKeys;
 
-    updatePagesDebounced(dbContextFactory, changedPages, () => {
-        dispatch(pageReducer.setIsLoading({ isSaving: false, id }))
-    });
+    // updatePagesDebounced(dbContextFactory, changedPages, () => {
+    //     dispatch(pageReducer.setIsLoading({ isSaving: false, id }))
+    // });
 
-    updateSectionsDebounced(dbContextFactory, [clonedSection], () => { });
+    // updateSectionsDebounced(dbContextFactory, [clonedSection], () => { });
 
     dispatch(pageReducer.setAll(changedPages));
 });
 
-export const onContentChage = createAsyncThunk<void, any, AsyncThunkConfig>("onContentChage", async (content: any, thunkApi) => {
+export const onContentChange = createAsyncThunk<void, any, AsyncThunkConfig>("onContentChange", async (content: any, thunkApi) => {
 
     const { dispatch, extra, getState } = thunkApi;
     const { dbContextFactory } = extra;
@@ -146,7 +162,7 @@ export const onContentChage = createAsyncThunk<void, any, AsyncThunkConfig>("onC
         return;
     }
 
-    dispatch(pageReducer.setIsLoading({ isSaving: true, id: selectedPage._id }))
+    dispatch(pageReducer.setIsDirtyId({ isDirty: true, id: selectedPage._id }))
 
     const page = { ...selectedPage }
     page.content = content;
@@ -177,9 +193,9 @@ export const onContentChage = createAsyncThunk<void, any, AsyncThunkConfig>("onC
     dispatch(pageReducer.setOne(page));
     dispatch(pageReducer.setSelected(page));
 
-
-    updatePagesDebounced(dbContextFactory, [page], () => {
-        dispatch(pageReducer.setIsLoading({ isSaving: false, id: selectedPage._id }))
+    savePages(dbContextFactory, [page], () => {
+        dispatch(pageReducer.setIsDirtyId({ isDirty: false, id: selectedPage._id }));
+        dispatch(pageReducer.setSavedDate(selectedPage._id))
     })
 });
 
@@ -201,7 +217,7 @@ export const onPagesChange = createAsyncThunk<void, IPage[], AsyncThunkConfig>("
         if (p.set(selected)) {
             dispatch(pageReducer.setSelected(selected));
 
-            updatePagesDebounced(dbContextFactory, [selected], () => {
+            savePages(dbContextFactory, [selected], () => {
                 dispatch(pageReducer.setIsLoading({ isSaving: false, id: selectedPage._id }))
             })
         }
@@ -267,15 +283,15 @@ export const onSelectedKeysChange = createAsyncThunk<void, OnSelectedKeysChangeP
     const { dbContextFactory } = extra;
     const { sections, pages } = getState();
     const { selected: selectedSection, data: allSections } = sections;
-    const { selected: selectedPage, data: allPages } = pages;
+    const { data: allPages } = pages;
     const clonedSections = allSections.map(w => ({ ...w } as ISection));
 
     if (allPages == null || allPages.length === 0 || selectedSection == null) {
         return;
     }
 
-    const clonedSelectedSection = {...selectedSection};
-    const { selectedKeys, selectedInfos } = props;
+    const clonedSelectedSection = { ...selectedSection };
+    const { selectedKeys } = props;
     const keys = selectedKeys.size > 0 ? [selectedKeys.values().next().value] : [];
     const changes: IPage[] = [];
 
@@ -303,11 +319,11 @@ export const onSelectedKeysChange = createAsyncThunk<void, OnSelectedKeysChangeP
     const index = clonedSections.findIndex(w => w.isSelected === true);
     clonedSections[index] = clonedSelectedSection;
 
-    dispatch(pageReducer.setAll(allPages.all()));
+    const savedPages = allPages.all();
+    dispatch(pageReducer.setAll(savedPages));
     dispatch(sectionReducer.setAll(clonedSections));
     dispatch(sectionReducer.setSelected(clonedSelectedSection));
 
-    // updatePagesDebounced(dbContextFactory, changedPages, () => { });
-
-    // updateSectionsDebounced(dbContextFactory, [clonedSection], () => { });
+    savePages(dbContextFactory, savedPages, () => { });
+    saveSections(dbContextFactory, [clonedSelectedSection], () => { });
 });

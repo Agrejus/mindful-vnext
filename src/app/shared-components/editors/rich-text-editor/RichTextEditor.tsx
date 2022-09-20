@@ -75,7 +75,7 @@ const mockUpload = (data: any, success: any, failed: any, progress: any) => {
 }
 
 interface State {
-
+    content: EditorState;
 }
 
 enum Styles {
@@ -135,6 +135,25 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
 
     editor: Editor | null = null;
 
+    state: State;
+
+
+    constructor(props: EditorProps) {
+        super(props);
+        debugger;
+        if (!props?.content) {
+            this.state = {
+                content: EditorState.createEmpty()
+            }
+        } else {
+            const data = JSON.parse(props.content);
+
+            this.state = {
+                content: EditorState.createWithContent(convertFromRaw(data))
+            }
+        }
+    }
+
     focusEditor = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 
         // if (e.target instanceof HTMLImageElement) {
@@ -148,14 +167,14 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
 
     onToggleStyle = (style: Styles) => {
         const newState = RichUtils.toggleInlineStyle(this.props.content, style);
-        this.props.onChange(newState);
+        this.onChange(newState);
 
         setTimeout(this.focusEditor);
     }
 
     onBlockType = (blockType: BlockTypes) => {
         const newState = RichUtils.toggleBlockType(this.props.content, blockType);
-        this.props.onChange(newState);
+        this.onChange(newState);
 
         setTimeout(this.focusEditor);
     }
@@ -207,7 +226,7 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
         const file: File = files[0] as File;
         readFile(file).then(result => {
             const state = this.insertImage(result.src as string);
-            this.props.onChange(state);
+            this.onChange(state);
         });
 
         return 'handled';
@@ -223,7 +242,7 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
         // debugger;
         readFile(file).then(result => {
             const state = this.insert(result.src as string, file.name);
-            this.props.onChange(state);
+            this.onChange(state);
         });
 
         return 'handled';
@@ -235,7 +254,7 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
         if (e.shiftKey) {
             // figure out how to get this to work
             const currentState = this.props.content;
-            this.props.onChange(RichUtils.onTab(e, currentState, 4));
+            this.onChange(RichUtils.onTab(e, currentState, 4));
         } else {
             const currentState = this.props.content;
             const newContentState = Modifier.replaceText(
@@ -245,7 +264,7 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
             );
 
             const newState = EditorState.push(currentState, newContentState, 'insert-characters');
-            this.props.onChange(newState);
+            this.onChange(newState);
         }
     }
 
@@ -275,7 +294,7 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
             )
 
             const newState = EditorState.push(editorState, contentState, 'insert-fragment')
-            this.props.onChange(newState);
+            this.onChange(newState);
             return 'handled';
         }
 
@@ -300,6 +319,11 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
             };
         }
 
+    }
+
+    onChange = (content: EditorState) => {
+        //this.props.onChange();
+        this.setState({ content })
     }
 
     render() {
@@ -335,7 +359,7 @@ class RichTextEditor extends React.PureComponent<EditorProps, State> {
                     placeholder="Your notes here..."
                     ref={e => (this.editor = e)}
                     editorState={this.props.content}
-                    onChange={this.props.onChange}
+                    onChange={this.onChange}
                     handlePastedFiles={this.onHandlePastedFile}
                     handleDroppedFiles={this.onHandleDroppedFiles}
                     handlePastedText={this.onHandlePastedText}
@@ -371,13 +395,14 @@ export class RichTextEditorContainer implements IEditor {
     getDefaultContent = () => EditorState.createEmpty();
 
     parse = (page: IPage) => {
-        if (!page?.content) {
-            return EditorState.createEmpty();
-        }
+        return page.content;
+        // if (!page?.content) {
+        //     return EditorState.createEmpty();
+        // }
 
-        const data = JSON.parse(page.content);
+        // const data = JSON.parse(page.content);
 
-        return EditorState.createWithContent(convertFromRaw(data));
+        // return EditorState.createWithContent(convertFromRaw(data));
     }
 
     stringify = (page: IPage) => {

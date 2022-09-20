@@ -1,5 +1,4 @@
 import { IDbRecord } from 'pouchdb-entity-fabric';
-import { TreeNode } from 'react-draggable-tree';
 import { MindfulDocumentTypes } from '../MindfulDataContext';
 
 export interface IPage extends IDbRecord<MindfulDocumentTypes> {
@@ -12,6 +11,7 @@ export interface IPage extends IDbRecord<MindfulDocumentTypes> {
     isContextMenuVisible?: boolean;
     isSynced?: boolean;
     createDateTime: string;
+    savedDateTime: string;
     order: number;
     pageTypeId: PageType;
     children: string[];

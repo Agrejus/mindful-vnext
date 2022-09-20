@@ -30,9 +30,10 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
     const pages = useAppSelector(pageReducer.getPages);
     const parent = useAppSelector(sectionReducer.getSelectedSection);
+    const dirtyPages = useAppSelector(pageReducer.getDirtyMarkers);
     const dispatch = useAppDispatch();
 
-    const onCreate = (name: string, type: PageType) => dispatch(pageActions.create({ name, type }));
+    const onCreate = (name: string, type: PageType) => dispatch(pageActions.onCreatePage({ name, type }));
     const onSelect = (id: string) => dispatch(pageActions.selectPage(id));
     const onSectionChange = (section: ISection) => dispatch(sectionActions.changeSection(section));
     const onChange = (dataSource: DataSource<IPage>) => dispatch(pageActions.onPagesChange(dataSource.all()));
@@ -237,8 +238,14 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                             return null;
                         }
 
+                        const classNames: string[] = ['page-item-button'];
+
+                        if (dirtyPages[page._id]) {
+                            classNames.push('page-item-button-unsaved')
+                        }
+
                         return <SortableNavButton
-                            className={"page-item-button"}
+                            className={classNames.join(' ')}
                             keyPart="page-sortable-key"
                             displayField="pageName"
                             icon={getIconClass(page.pageTypeId)}

@@ -7,23 +7,30 @@ import { debounce, throttle } from "radash";
 import { MindfulDataContextFactory } from "../../data-access/MindfulDataContext";
 import moment from "moment";
 
-export const updateSectionsDebounced = debounce({ delay: 750 }, throttle({ interval: 750 }, async (dbContextFactory: MindfulDataContextFactory, sections: ISection[], done: () => void) => {
-    console.log('updateSectionsDebounced')
-    const context = dbContextFactory();
+const debounced: { [key: string]: UpdateSections } = {}
 
-    const s = performance.now()
-    const linked = await context.sections.link(...sections);
-    await context.sections.markDirty(...linked);
-    //await context.sections.upsert(...sections);
-    await context.saveChanges();
-    const e = performance.now();
-    console.log('updateSectionsDebounced', e - s);
-    done();
-}));
+type UpdateSections = (dbContextFactory: MindfulDataContextFactory, sections: ISection[], done: () => void) => void
+export const saveSections: UpdateSections = (dbContextFactory: MindfulDataContextFactory, sections: ISection[], done: () => void) => {
+    const key = sections.map(w => w._id).join("_");
+    if (debounced[key] == null) {
+        debounced[key] = debounce({ delay: 750 }, throttle({ interval: 750 }, async (dbContextFactory: MindfulDataContextFactory, sections: ISection[], done: () => void) => {
+            console.log('updateSectionsDebounced')
+            const context = dbContextFactory();
 
-export const setSection = () => {
+            const s = performance.now()
+            const linked = await context.sections.link(...sections);
+            await context.sections.markDirty(...linked);
+            //await context.sections.upsert(...sections);
+            await context.saveChanges();
+            const e = performance.now();
+            console.log('updateSectionsDebounced', e - s);
+            done();
+        }));
+    }
 
+    debounced[key](dbContextFactory, sections, done);
 }
+
 
 export const selectSection = createAsyncThunk<void, string, AsyncThunkConfig>("selectSection", async (id: string, thunkApi) => {
 
@@ -36,7 +43,7 @@ export const selectSection = createAsyncThunk<void, string, AsyncThunkConfig>("s
         return;
     }
 
-    dispatch(sectionReducer.setIsSaving(true));
+    // dispatch(sectionReducer.setIsSaving(true));
 
     const clonedSections = [...data].map(w => ({ ...w }));
     let index = -1;
@@ -52,9 +59,9 @@ export const selectSection = createAsyncThunk<void, string, AsyncThunkConfig>("s
 
     dispatch(sectionReducer.setAll(clonedSections));
 
-    updateSectionsDebounced(dbContextFactory, clonedSections, () => {
-        dispatch(sectionReducer.setIsSaving(false));
-    });
+    // updateSectionsDebounced(dbContextFactory, clonedSections, () => {
+    //     dispatch(sectionReducer.setIsSaving(false));
+    // });
 
     if (index != -1) {
 
@@ -163,9 +170,9 @@ export const changeSection = createAsyncThunk<void, ISection, AsyncThunkConfig>(
 
     dispatch(sectionReducer.setAll(shallow));
 
-    updateSectionsDebounced(dbContextFactory, shallow, () => {
-        dispatch(sectionReducer.setIsSaving(false));
-    });
+    // updateSectionsDebounced(dbContextFactory, shallow, () => {
+    //     dispatch(sectionReducer.setIsSaving(false));
+    // });
 });
 
 

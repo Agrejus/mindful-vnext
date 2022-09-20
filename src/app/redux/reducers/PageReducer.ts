@@ -4,7 +4,8 @@ import type { RootState } from '../store'
 import { IPage } from '../../data-access/entities/Page'
 import { DataSource } from '../../../utilities/DataSource';
 import { Markers } from '../types';
-import { onContentChage } from '../actions/PageActions';
+import { onContentChange } from '../actions/PageActions';
+import moment from 'moment';
 
 // Define a type for the slice state
 export interface PageState {
@@ -36,6 +37,22 @@ export const pageSlice = createSlice({
         setAll: (state, action: PayloadAction<IPage[]>) => {
             state.data = DataSource.fromArray("_id", action.payload)
         },
+        setSavedDate: (state, action: PayloadAction<string>) => {
+            const id = action.payload;
+
+            const pages = state.data.clone();
+
+            const found = pages.get(id);
+
+            const updated = { ...found, savedDateTime: moment().format() }
+            pages.set(updated);
+
+            if (state.selected?._id === updated._id) {
+                state.selected = updated;
+            }
+
+            state.data = pages;
+        },
         setSelected: (state, action: PayloadAction<IPage | undefined>) => {
             state.selected = action.payload != null ? { ...action.payload } : undefined;
         },
@@ -64,17 +81,17 @@ export const pageSlice = createSlice({
         }
     },
     extraReducers: builder => {
-        builder.addCase(onContentChage.pending, (state, action) => {
+        builder.addCase(onContentChange.pending, (state, action) => {
 
-        }).addCase(onContentChage.fulfilled, (state, action) => {
+        }).addCase(onContentChange.fulfilled, (state, action) => {
 
-        }).addCase(onContentChage.rejected, (state, action) => {
+        }).addCase(onContentChange.rejected, (state, action) => {
 
         })
     }
 })
 
-export const { setAll, setSelected, setIsLoading, setIsDirtyId, setOne } = pageSlice.actions
+export const { setAll, setSelected, setIsLoading, setIsDirtyId, setOne, setSavedDate } = pageSlice.actions
 
 // Other code such as selectors can use the imported `RootState` type
 

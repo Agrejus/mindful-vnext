@@ -95,7 +95,7 @@ declare interface Window {
 
 declare module "worker-loader!*" {
   class WebpackWorker extends Worker {
-    constructor(options?: WorkerOptions);
+      constructor(options?: WorkerOptions);
   }
 
   export default WebpackWorker;

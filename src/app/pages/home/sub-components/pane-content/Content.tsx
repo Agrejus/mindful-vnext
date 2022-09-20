@@ -18,7 +18,7 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
     const section = useAppSelector(sectionReducer.getSelectedSection);
     const page = useAppSelector(pageReducer.getSelectedPage);
     const dispatch = useAppDispatch();
-    const onContentChange = (content: any) => dispatch(pageActions.onContentChage(content));
+    const onContentChange = (content: any) => dispatch(pageActions.onContentChange(content));
 
     const onAddWidgetClick = () => {
         setIsWdigetModalVisible(true);
@@ -39,6 +39,7 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
                 {areWidgetsAvailable && <HoverExpandButton onClick={onAddWidgetClick} className="text-default" text="widgets" iconClassName={icon} />}
             </div>
             <h4>{page.pageName}</h4>
+            <small>{moment(page.savedDateTime).format('dddd, MMMM Do YYYY, h:mm:ss A')}</small>
             <small>{moment(page.createDateTime).format('dddd, MMMM Do YYYY, h:mm A')}</small>
             <hr />
         </div>}
