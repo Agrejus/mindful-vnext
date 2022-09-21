@@ -192,8 +192,9 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
         section.selectedKeys = keys;
 
-        await onChange(pages);
-        await onSectionChange(section);
+        // this messes up content change, but allows for drag and drop to work properly
+        // onChange(pages);
+        // onSectionChange(section);
     }
 
     const onSavePage = async (page: IPage, name: string) => {
@@ -278,7 +279,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                             </Menu>
                         </SortableNavButton>
                     }}
-                    onSelectedKeysChange={(keys, infos) => onSelectedKeysChange(keys as any, infos)}
+                    onSelectedKeysChange={(keys: any, infos) => onSelectedKeysChange(keys, infos)}
                     onCollapsedChange={onCollapsedChange}
                     onMove={onMove}
                     onCopy={onCopy}
