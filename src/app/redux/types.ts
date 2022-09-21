@@ -1,1 +1,0 @@
-export type Markers = { [key: string]: Date }

@@ -3,30 +3,23 @@ import { getDisplayName, render } from '../../../../shared-components/editors';
 import { allWidgets, isAllowed } from '../../../../widgets/section-widget';
 import { AddWidgetModal } from '../../../../shared-components/modal/AddWidgetModal';
 import { HoverExpandButton } from '../../../../shared-components/buttons/HoverExpandButton';
-import { useDispatch, useSelector } from 'react-redux';
-import * as pageActions from '../../../../redux/actions/PageActions';
-import * as pageReducer from '../../../../redux/reducers/PageReducer';
-import * as sectionReducer from '../../../../redux/reducers/SectionReducer';
 import moment from 'moment';
+import { ISection } from '../../../../data-access/entities/Section';
+import { IPage } from '../../../../data-access/entities/Page';
 
 interface IContentProps {
-
+    onChange: (content: any) => void;
+    page: IPage;
+    section: ISection;
 }
 
 export const Content: React.FunctionComponent<IContentProps> = (props) => {
     const [isWdigetModalVisible, setIsWdigetModalVisible] = useState(false);
+    const { onChange, page, section } = props;
 
-    const section = useSelector(sectionReducer.getSelectedSection);
-    const page = useSelector(pageReducer.getSelectedPage);
-    const dispatch = useDispatch();
-    const onContentChange = (content: any) => dispatch(pageActions.onContentChage(content));
 
     const onAddWidgetClick = () => {
         setIsWdigetModalVisible(true);
-    }
-
-    if (page == null || section == null) {
-        return null;
     }
 
     const areWidgetsAvailable = allWidgets.some(w => isAllowed(w.type, page.pageTypeId));
@@ -45,7 +38,7 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
         </div>}
         {render(page.pageTypeId, {
             content: page.content,
-            onChange: onContentChange
+            onChange: onChange
         })}
         {
             isWdigetModalVisible && section && <AddWidgetModal

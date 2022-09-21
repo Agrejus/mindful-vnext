@@ -8,35 +8,27 @@ import { unique } from 'radash';
 import { ButtonType, Modal } from '../../../../shared-components/modal/Modal';
 import { CreatableNavButton } from '../../../../shared-components/buttons/CreatableNavButton';
 import { Menu, MenuItem } from '@szhsin/react-menu';
-import * as pageActions from '../../../../redux/actions/PageActions';
-import * as sectionActions from '../../../../redux/actions/SectionActions';
-import * as pageReducer from '../../../../redux/reducers/PageReducer';
-import * as sectionReducer from '../../../../redux/reducers/SectionReducer';
-import { useDispatch, useSelector } from 'react-redux';
 import { DataSource } from '../../../../../utilities/DataSource';
 
 interface IPagesProps {
-
+    onCreate: (name: string, type: PageType) => Promise<void>;
+    onSelect: (id: string) => Promise<void>;
+    onChange: (dataSource: DataSource<IPage>) => Promise<void>;
+    onSectionChange: (section: ISection) => Promise<void>;
+    onDelete: (page: IPage) => Promise<void>;
+    section: ISection;
+    pages: DataSource<IPage>;
 }
 
 export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
+    const { onCreate, onSelect, onChange, onSectionChange, onDelete, section, pages } = props;
     const [deletePage, setDeletePage] = useState<IPage | null>(null);
     const [isMenuVisible, setIsMenuVisible] = useState<boolean>(false);
     const [newPageType, setNewPageType] = useState<PageType | null>(null);
     const [renamePage, setRenamePage] = useState<IPage | null>(null);
     const inputElement = useRef<HTMLInputElement | null>(null);
     const [value, setValue] = useState<string>('');
-
-    const pages = useSelector(pageReducer.getPages);
-    const parent = useSelector(sectionReducer.getSelectedSection);
-    const dispatch = useDispatch();
-
-    const onCreate = (name: string, type: PageType) => dispatch(pageActions.create({ name, type }));
-    const onSelect = (id: string) => dispatch(pageActions.selectPage(id));
-    const onSectionChange = (section: ISection) => dispatch(sectionActions.changeSection(section));
-    const onChange = (dataSource: DataSource<IPage>) => dispatch(pageActions.onPagesChange(dataSource.all()));
-    const onDelete = (page: IPage) => dispatch(pageActions.onDeletePage(page));
 
     useEffect(() => {
 
@@ -92,7 +84,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
     const onMove = async (src: TreeRowInfo[], dest: TreeRowInfo, destIndex: number, destPathAfterMove: number[]) => {
 
-        if (parent.treeRoot == null) {
+        if (section.treeRoot == null) {
             return;
         }
 
@@ -102,13 +94,13 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         for (let i = src.length - 1; i >= 0; --i) {
             const { path } = src[i];
             const index = path[path.length - 1]
-            const p = getDescendant(parent.treeRoot, path.slice(0, -1))!
+            const p = getDescendant(section.treeRoot, path.slice(0, -1))!
             const [item] = p.children!.splice(index, 1);
             changedParents.push(p);
             items.unshift(item);
         }
 
-        const destItem = getDescendant(parent.treeRoot, destPathAfterMove.slice(0, -1))!;
+        const destItem = getDescendant(section.treeRoot, destPathAfterMove.slice(0, -1))!;
         destItem.children!.splice(destPathAfterMove[destPathAfterMove.length - 1], 0, ...items);
         destItem.collapsed = false;
 
@@ -118,7 +110,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
             return page;
         });
 
-        const rootOrderChanges = !parent.treeRoot.children ? [] : parent.treeRoot.children.map((w, i) => {
+        const rootOrderChanges = !section.treeRoot.children ? [] : section.treeRoot.children.map((w, i) => {
             const page = pages.get(w.key as string);
             page.order = i;
             return page;
@@ -127,7 +119,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         const final = unique([...changes, ...rootOrderChanges], w => w._id)
 
         await onChange(pages);
-        await onSectionChange(parent);
+        await onSectionChange(section);
     }
 
     const onCopy = (src: TreeRowInfo[], dest: TreeRowInfo, destIndex: number) => {
@@ -138,7 +130,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         //   const {path} = src[i]
         //   const index = path[path.length - 1]
         //   const parent = root.getDescendant(path.slice(0, -1))!
-        //   const item = parent.children![index].clone()
+        //   const item = section.children![index].clone()
         //   items.unshift(item)
         // }
         // const destItem = root.getDescendant(dest.path)!
@@ -149,11 +141,11 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
     const onCollapsedChange = async (info: TreeRowInfo, collapsed: boolean) => {
 
-        if (parent.treeRoot == null || pages == null) {
+        if (section.treeRoot == null || pages == null) {
             return;
         }
 
-        const node = getDescendant(parent.treeRoot, info.path);
+        const node = getDescendant(section.treeRoot, info.path);
 
         if (!node) {
             return;
@@ -166,7 +158,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         page.isCollapsed = collapsed;
 
         await onChange(pages);
-        await onSectionChange(parent);
+        await onSectionChange(section);
     }
 
     const onSelectedKeysChange = async (selectedKeys: Set<string>, selectedInfos: TreeRowInfo[]) => {
@@ -198,10 +190,10 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
             }
         }
 
-        parent.selectedKeys = keys;
+        section.selectedKeys = keys;
 
         await onChange(pages);
-        await onSectionChange(parent);
+        await onSectionChange(section);
     }
 
     const onSavePage = async (page: IPage, name: string) => {
@@ -257,9 +249,9 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
         <div className="sort-container">
             {
-                pages.length > 0 && parent.treeRoot && <TreeView
-                    root={parent.treeRoot}
-                    selectedKeys={new Set<string>(parent.selectedKeys)}
+                pages.length > 0 && section.treeRoot && <TreeView
+                    root={section.treeRoot}
+                    selectedKeys={new Set<string>(section.selectedKeys)}
                     rowHeight={36}
                     rowContent={e => {
 

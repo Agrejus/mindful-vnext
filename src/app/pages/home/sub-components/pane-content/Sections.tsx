@@ -8,31 +8,24 @@ import { RenameModal } from '../../../../shared-components/modal/RenameModal';
 import { ChangeSectionColorModal } from '../../../../shared-components/modal/ChangeSectionColorModal';
 import { SectionListItem } from './sub-components/SectionListItem';
 import { ContextMenuOptions } from './sub-components/SectionButton';
-import { useDispatch, useSelector } from 'react-redux';
-import * as sectionActions from '../../../../redux/actions/SectionActions';
-import * as sectionReducer from '../../../../redux/reducers/SectionReducer';
 
 interface ISectionsProps {
-
+    onCreate: (name: string) => Promise<void>;
+    onDelete: (id: string) => Promise<void>;
+    onChangeAll: (sections: ISection[]) => Promise<void>;
+    onChange: (sections: ISection) => Promise<void>;
+    onSelect: (id: string) => Promise<void>;
+    sections: ISection[];
 }
 
 export const Sections: React.FunctionComponent<ISectionsProps> = (props) => {
 
+    const { onCreate, onDelete, onChange, onChangeAll, onSelect, sections } = props;
     const [isCreatingNewSection, setIsCreatingNewSection] = useState<boolean>(false);
     const [deleteSection, setDeleteSection] = useState<ISection | null>(null);
     const [renameSection, setRenameSection] = useState<ISection | null>(null);
     const [changeColorSection, setChangeColorSection] = useState<ISection | null>(null);
     const [settingsSection, setSettingsSection] = useState<ISection | null>(null);
-
-    const dispatch = useDispatch();
-
-    const onCreate = (name: string) => dispatch(sectionActions.create(name));
-    const onDelete = (id: string) => dispatch(sectionActions.deleteSection(id));
-    const onChangeSections = (sections: ISection[]) => dispatch(sectionReducer.changes(sections));
-    const onSelect = (id: string) => dispatch(sectionActions.selectSection(id));
-    const onChange = (section: ISection) => dispatch(sectionActions.changeSection(section));
-
-    const sections = useSelector(sectionReducer.getSections);
 
     const onCreateSection = async (name: string) => {
         onCreate(name);
@@ -47,7 +40,7 @@ export const Sections: React.FunctionComponent<ISectionsProps> = (props) => {
             sections[i].order = i + 1;
         }
 
-        onChangeSections(sections);
+        onChangeAll(sections);
     }
 
     const handleDeleteSection = async (type: ButtonType, id: string) => {
