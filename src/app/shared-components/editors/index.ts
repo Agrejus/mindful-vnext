@@ -101,7 +101,7 @@ export const stringifySearchContent = (pageType: PageType, content: any) => {
 }
 
 export const stringify = (page: IPage) => {
-    const editor = editors.find(w => w.type === page.pageTypeId);
+    const editor = editors.find(w => w.type === page.pageType);
 
     if (!editor) {
         return '';
@@ -111,7 +111,7 @@ export const stringify = (page: IPage) => {
 }
 
 export const parse = (page: IPage) => {
-    const editor = editors.find(w => w.type === page.pageTypeId);
+    const editor = editors.find(w => w.type === page.pageType);
 
     if (!editor) {
         return null;

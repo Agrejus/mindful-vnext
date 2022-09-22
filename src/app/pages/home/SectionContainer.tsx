@@ -128,7 +128,6 @@ export const SectionContainer: React.FC<ISectionContainerProps> = (props) => {
             widgets: [],
             isArchived: false,
             settings: {},
-            selectedKeys: [],
             treeRoot: null
         });
 
@@ -172,7 +171,5 @@ export const SectionContainer: React.FC<ISectionContainerProps> = (props) => {
         onSectionDelete={onSectionDelete}
         onSectionSelect={onSectionSelect}
         selectedSection={selectedSection}
-        onSetSections={sections => setSections(sections)}
-        onSetSelectedSection={section => setSelectedSection(section)}
     >{children}</PageContainer>
 }

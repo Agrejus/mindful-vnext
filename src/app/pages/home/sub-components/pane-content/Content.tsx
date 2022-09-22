@@ -22,21 +22,21 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
         setIsWdigetModalVisible(true);
     }
 
-    const areWidgetsAvailable = allWidgets.some(w => isAllowed(w.type, page.pageTypeId));
+    const areWidgetsAvailable = allWidgets.some(w => isAllowed(w.type, page.pageType));
     const icon = section?.widgets != null && section.widgets.length > 0 ? "bi bi-app-indicator" : "bi bi-app";
-    const pageTitlePrefix = getDisplayName(page.pageTypeId);
+    const pageTitlePrefix = getDisplayName(page.pageType);
 
     return <div className="page-content-pane">
-        {!!page.pageName && <div className="page-content-pane-title">
+        {!!page.title && <div className="page-content-pane-title">
             <div className="page-header-actions-container">
                 <HoverExpandButton className="text-default" text="share" iconClassName="fas fa-user-plus" />
                 {areWidgetsAvailable && <HoverExpandButton onClick={onAddWidgetClick} className="text-default" text="widgets" iconClassName={icon} />}
             </div>
-            <h4>{page.pageName}</h4>
+            <h4>{page.title}</h4>
             <small>{moment(page.createDateTime).format('dddd, MMMM Do YYYY, h:mm A')}</small>
             <hr />
         </div>}
-        {render(page.pageTypeId, {
+        {render(page.pageType, {
             content: page.content,
             onChange: onChange
         })}

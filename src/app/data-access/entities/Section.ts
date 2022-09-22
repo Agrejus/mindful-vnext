@@ -1,6 +1,6 @@
 import { IDbRecord } from "pouchdb-entity-fabric";
-import { TreeNode } from "react-draggable-tree";
 import { MindfulDocumentTypes } from "../MindfulDataContext";
+import { IPage } from "./Page";
 
 export interface ISection extends IDbRecord<MindfulDocumentTypes> {
     sectionName: string;
@@ -13,8 +13,7 @@ export interface ISection extends IDbRecord<MindfulDocumentTypes> {
     widgets: IWidget[];
     settings: ISectionSettings;
     isArchived: boolean;
-    treeRoot: TreeNode | null;
-    selectedKeys: string[];
+    treeRoot: IPage | null;
 }
 
 export interface ISectionSettings {
@@ -30,5 +29,3 @@ export enum SectionWidgetType {
     KanbanNonCompleted = 1,
     Priority = 2
 }
-
-

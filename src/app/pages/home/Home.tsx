@@ -87,10 +87,8 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
                         onChange={onPageChange}
                         onCreate={onPageCreate}
                         onDelete={onPageDelete}
-                        onSectionChange={onSectionChange}
                         onSelect={onPageSelect}
                         pages={pages}
-                        section={selectedSection}
                     />}
                 </Pane>
                 <Pane>

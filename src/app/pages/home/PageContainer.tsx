@@ -9,7 +9,6 @@ import { MindfulDataContextFactory } from '../../data-access/MindfulDataContext'
 import { useMindfulDataContext } from '../../providers/MindfulDataContextProvider';
 import { getDefaultContent } from '../../shared-components/editors';
 import { Home } from './Home';
-import { updateSectionsDebounced } from './SectionContainer';
 
 interface IPageContainerProps {
     sections: ISection[]
@@ -19,9 +18,6 @@ interface IPageContainerProps {
     onSectionDelete: (id: string) => Promise<ISection | undefined>;
     onSectionCreate: (name: string) => Promise<void>;
     onSectionSelect: (id: string) => Promise<void>;
-
-    onSetSelectedSection: (section: ISection | undefined) => void;
-    onSetSections: (sections: ISection[]) => void;
 }
 
 const updatePagesDebounced = debounce({ delay: 1500 }, throttle({ interval: 1500 }, async (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => {
@@ -29,6 +25,7 @@ const updatePagesDebounced = debounce({ delay: 1500 }, throttle({ interval: 1500
 
     const s = performance.now()
     const linked = await context.pages.link(...pages);
+   
     await context.pages.markDirty(...linked);
     await context.saveChanges();
     const e = performance.now();
@@ -36,37 +33,9 @@ const updatePagesDebounced = debounce({ delay: 1500 }, throttle({ interval: 1500
     done();
 }))
 
-const createRoot = (dictionary: DataSource<IPage>): TreeNode => {
-
-    const childPageIds = !dictionary.length ? [] : dictionary.map(w => w.children).reduce((a, b) => a.concat(b))
-    const rootPageIds = dictionary.map(w => w._id).filter(w => childPageIds.includes(w) === false);
-
-    return {
-        children: rootPageIds && rootPageIds.map(w => {
-            const page = dictionary.get(w);
-            return toTreeNode(page, dictionary);
-        }),
-        key: -1,
-        collapsed: true
-    }
-}
-
-const toTreeNode = (item: IPage, dictionary: DataSource<IPage>): TreeNode => {
-    return {
-        children: item.children.length > 0 ? item.children.map(w => {
-            const page = dictionary.get(w);
-            return toTreeNode(page, dictionary);
-        }) : [],
-        key: item._id,
-        collapsed: item.isCollapsed,
-        order: item.order
-    } as TreeNode;
-}
-
-
 export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
-    const { children, sections, selectedSection, onSectionChange, onSectionChanges, onSetSelectedSection, onSetSections, onSectionSelect } = props;
+    const { children, sections, selectedSection, onSectionChange, onSectionChanges, onSectionSelect } = props;
     const [pages, setPages] = useState<DataSource<IPage>>(DataSource.fromArray<IPage>("_id", []));
     const [selectedPage, setSelectedPage] = useState<IPage | undefined>(undefined);
 
@@ -78,10 +47,11 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
             if (selectedSection != null) {
                 const context = dbContextFactory();
                 const allPages = await context.pages.filter(w => w.sectionId === selectedSection._id);
+
                 setPages(DataSource.fromArray("_id", allPages));
-    
+
                 const page = allPages.find(w => w.isSelected === true);
-    
+
                 if (page) {
                     setSelectedPage({ ...page });
                 }
@@ -116,12 +86,12 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
             if (p.set(selected)) {
                 setSelectedPage(selected)
-
-                updatePagesDebounced(dbContextFactory, [selected], () => { })
             }
         }
 
-        setPages(p)
+        updatePagesDebounced(dbContextFactory, p.all(), () => { })
+
+        setPages(p.shallow())
     }
 
 
@@ -132,25 +102,25 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         }
 
         const context = dbContextFactory();
-        const [linkedSection] = await context.sections.link(selectedSection)
         const [page] = await context.pages.add({
-            sectionId: linkedSection._id,
-            pageName: name,
+            sectionId: selectedSection._id,
+            title: name,
             isPinned: false,
             content: getDefaultContent(type),
             createDateTime: moment().format(),
             order: 0,
-            pageTypeId: type,
+            pageType: type,
             isSelected: false,
+            path: [],
             children: [],
-            isCollapsed: true,
-            pageGroupId: -1,
+            expanded: false,
             isContextMenuVisible: false
         });
 
+        page.path = [page._id]
+
         const dataSource = pages.shallow();
         dataSource.push(page)
-        linkedSection.treeRoot = createRoot(dataSource);
         await context.saveChanges();
         const final = await context.pages.all()
 
@@ -159,15 +129,9 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
     const onPageDelete = async (page: IPage) => {
 
+        // needs some love
         const context = dbContextFactory();
         await context.pages.remove(page._id);
-
-        if (selectedSection != null) {
-            const [linkedSection] = await context.sections.link({ ...selectedSection })
-            if (linkedSection.selectedKeys.includes(page._id)) {
-                linkedSection.selectedKeys = linkedSection.selectedKeys.filter(w => w !== page._id);
-            }
-        }
 
         const parent = pages.find(w => w.children.includes(page._id))
 
@@ -179,24 +143,10 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         await context.saveChanges();
 
         const allPages = await context.pages.all();
-        const sections = await context.sections.all();
         const dataSource = DataSource.fromArray<IPage>("_id", [...allPages]);
-        const foundSection = sections.find(w => w._id === page.sectionId)
 
         setSelectedPage(undefined);
         setPages(dataSource);
-        onSetSections([...sections]);
-
-        if (foundSection) {
-
-            foundSection.treeRoot = createRoot(dataSource);
-
-            await context.saveChanges();
-
-            if (foundSection._id === selectedSection?._id) {
-                onSetSelectedSection({ ...foundSection });
-            }
-        }
     }
 
     const onPageSelect = async (id: string) => {
@@ -206,12 +156,9 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         }
 
         const changedPages = pages.all();
-        const selectedKeys: string[] = [];
-        const clonedSection = { ...selectedSection };
 
         for (let page of changedPages) {
             if (page._id === id) {
-                selectedKeys.push(id);
                 page.isSelected = true;
                 setSelectedPage(page)
                 continue;
@@ -220,13 +167,9 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
             page.isSelected = false;
         }
 
-        clonedSection.selectedKeys = selectedKeys;
-
-        onSetSelectedSection(clonedSection);
         setPages(DataSource.fromArray("_id", changedPages))
 
         updatePagesDebounced(dbContextFactory, changedPages, () => { });
-        updateSectionsDebounced(dbContextFactory, [clonedSection], () => { })
     }
 
 

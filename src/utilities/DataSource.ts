@@ -55,12 +55,17 @@ export class DataSource<T extends {}> {
     }
 
     shallow() {
-        return new DataSource<T>(this._id, { ...this._data });
+        const copy = Object.keys(this._data).reduce((a, v) => ({ ...a, [v]: { ...(this._data as any)[v] } }), {} as { [key in keyof T]: T })
+        return new DataSource<T>(this._id, copy);
     }
 
     clone() {
         const data = JSON.parse(JSON.stringify(this._data)) as { [key in keyof T]: T };
         return new DataSource<T>(this._id, data);
+    }
+
+    many(ids: string[]) {
+        return ids.map(w => this.get(w));
     }
 
     set(entity: T) {
