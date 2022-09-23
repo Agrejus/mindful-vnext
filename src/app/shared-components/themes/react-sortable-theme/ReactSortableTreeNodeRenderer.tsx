@@ -2,6 +2,7 @@ import React, { Children, cloneElement } from 'react';
 import { TreeRendererProps } from 'react-sortable-tree';
 import { IPage } from '../../../data-access/entities/Page';
 import { classnames } from './utils';
+import './ReactSortableTreeNodeRenderer.scss';
 
 export const ReactSortableTreeNodeRenderer: React.FunctionComponent<TreeRendererProps<IPage>> = (props) => {
     const {

@@ -10,7 +10,6 @@ import { Menu, MenuItem } from '@szhsin/react-menu';
 import { DataSource } from '../../../../../utilities/DataSource';
 import SortableTree, { TreeItem, getTreeFromFlatData, getFlatDataFromTree } from 'react-sortable-tree';
 import { ReactSortableTheme } from '../../../../shared-components/themes/react-sortable-theme';
-import 'react-sortable-tree/style.css';
 
 interface IPagesProps {
     onCreate: (name: string, type: PageType) => Promise<void>;
