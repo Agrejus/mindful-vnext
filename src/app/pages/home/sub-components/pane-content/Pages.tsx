@@ -9,7 +9,7 @@ import { CreatableNavButton } from '../../../../shared-components/buttons/Creata
 import { Menu, MenuItem } from '@szhsin/react-menu';
 import { DataSource } from '../../../../../utilities/DataSource';
 import SortableTree, { TreeItem, getTreeFromFlatData, getFlatDataFromTree } from 'react-sortable-tree';
-import { getDefaultTheme, getTheme } from '../../../../shared-components/themes';
+import { getTheme } from '../../../../shared-components/themes';
 import { IReactSortableNodeContentRendererExtraProps } from '../../../../shared-components/themes/react-sortable-theme/ReactSortableNodeContentRenderer';
 import { PageSortableMenuAction } from '../../../../shared-components/themes/react-sortable-theme/sortables/PageSortable';
 
@@ -113,7 +113,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
     }
 
     const getTree = () => {
-        const roots = pages.shallow().all();
+        const roots = pages.all();
 
         const result: TreeItem<IPage>[] = [];
 
@@ -148,7 +148,8 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         onSelect: page => onSelect(page._id),
         renamePage
     }
-    //getTheme(themeExtraProps)
+    const theme = getTheme(themeExtraProps)
+    //const theme = getDefaultTheme();
     return <>
         {newPageType != null && <CreatableNavButton key={"new-page"} defaultText="New Page" onSave={name => onCreateNewPage(name, newPageType)} />}
 
@@ -158,7 +159,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                     treeData={getTree()}
                     getNodeKey={w => w.node._id}
                     onChange={e => onTreeChange(e as any)}
-                    theme={getDefaultTheme()}
+                    theme={theme}
                 />
             }
         </div>

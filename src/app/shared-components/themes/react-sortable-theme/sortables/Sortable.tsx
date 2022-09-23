@@ -8,6 +8,7 @@ interface SortableProps {
     icon?: string;
     dataItem: any;
     className?: string;
+    onContextMenu?:(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 export const Sortable: React.FunctionComponent<SortableProps> = (props) => {
@@ -38,7 +39,7 @@ export const Sortable: React.FunctionComponent<SortableProps> = (props) => {
     };
     const className = additionalClassNames.join(' ');
 
-    return <div className={className} onClick={click} style={{ ...style }}>
+    return <div className={className} onClick={click} style={{ ...style }} onContextMenu={props.onContextMenu}>
         {!!props.dataItem.color && <><span style={spanStyle}></span>&nbsp;</>}
         {!!props.icon && <><i className={`${props.icon} icon-md display-icon`}></i>&nbsp;</>}
         {props.dataItem[props.displayField]}

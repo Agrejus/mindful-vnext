@@ -77,27 +77,11 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<ReactSort
             //, node.isSelected && "rst__rowContentsActive"
             // Show the handle used to initiate a drag-and-drop
             handle = connectDragSource(<div className={classnames('rst__rowContents', (!canDrag && 'rst__rowContentsDragDisabled'), rowDirectionClass)} >
-                {/* <PageSortable 
+                <PageSortable
                     onClick={() => onSelect(node)}
                     node={node}
                     onMenuClick={action => onMenuClick(action, node)}
-                /> */}
-                {node.title}
-                {/* <div className={classnames('rst__rowLabel', rowDirectionClass)}>
-                    <span className={classnames('rst__rowTitle', node.subtitle && 'rst__rowTitleWithSubtitle')}>
-                        {typeof nodeTitle === 'function' ? nodeTitle({ node, path, treeIndex }) : nodeTitle}
-                    </span>
-
-                    {nodeSubtitle && <span className="rst__rowSubtitle">
-                        {typeof nodeSubtitle === 'function' ? nodeSubtitle({ node, path, treeIndex }) : nodeSubtitle}
-                    </span>}
-                </div>
-
-                <div className="rst__rowToolbar">
-                    {buttons && buttons.map((btn, index) => <div key={index} className="rst__toolbarButton">
-                        {btn}
-                    </div>)}
-                </div> */}
+                />
             </div>, { dropEffect: 'copy' });
         }
     }
@@ -118,11 +102,10 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<ReactSort
                 <button
                     type="button"
                     aria-label={node.expanded ? 'Collapse' : 'Expand'}
-                    className={classnames(node.expanded ? 'rst__collapseButton' : 'rst__expandButton', rowDirectionClass)}
+                    className={classnames(node.expanded ? 'fa fa-caret-down rst__collapseButton' : 'fa fa-caret-right rst__expandButton', '')}
                     style={buttonStyle}
                     onClick={() => toggleChildrenVisibility({ node, path, treeIndex })}
                 />
-
                 {node.expanded && !isDragging && <div style={{ width: scaffoldBlockPxWidth }} className={classnames('rst__lineChildren', rowDirectionClass)} />}
             </div>}
 

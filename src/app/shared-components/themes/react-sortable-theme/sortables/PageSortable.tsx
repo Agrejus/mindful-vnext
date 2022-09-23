@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sortable } from './Sortable';
 import { getIconClass } from '../../../editors/index';
 import { IPage } from '../../../../data-access/entities/Page';
-import { Menu, MenuItem } from '@szhsin/react-menu';
+import { ControlledMenu, MenuItem, useMenuState } from '@szhsin/react-menu';
 
 export enum PageSortableMenuAction {
-    Rename, 
+    Rename,
     Duplicate,
     Delete,
     Select
@@ -20,7 +20,17 @@ interface PageSortableProps {
 export const PageSortable: React.FC<PageSortableProps> = (props) => {
 
     const { node, onMenuClick, onClick } = props;
-    
+    const [menuProps, toggleMenu] = useMenuState();
+    const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+
+    const onContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setAnchorPoint({ x: e.clientX, y: e.clientY });
+        toggleMenu(true);
+    };
+
+
     return <Sortable
         className="page-item-button"
         keyPart="page-sortable-key"
@@ -28,11 +38,12 @@ export const PageSortable: React.FC<PageSortableProps> = (props) => {
         icon={getIconClass(node.pageType)}
         idField={'_id'}
         onClick={onClick}
-        dataItem={node}>
-        <Menu menuButton={<i className="bi bi-three-dots-vertical kanban-card-header-actions clickable pull-right" onClick={e => { e.preventDefault(); e.stopPropagation(); }}></i>} transition>
+        dataItem={node}
+        onContextMenu={onContextMenu}>
+        <ControlledMenu {...menuProps} anchorPoint={anchorPoint} onClose={() => toggleMenu(false)}>
             <MenuItem onClick={() => onMenuClick(PageSortableMenuAction.Rename)}><i className='fas fa-i-cursor'></i>&nbsp;Rename</MenuItem>
             <MenuItem onClick={() => onMenuClick(PageSortableMenuAction.Duplicate)}><i className='far fa-clone'></i>&nbsp;Duplicate</MenuItem>
             <MenuItem onClick={() => onMenuClick(PageSortableMenuAction.Delete)}><i className='far fa-trash-alt text-danger'></i>&nbsp;Delete</MenuItem>
-        </Menu>
+        </ControlledMenu>
     </Sortable>
 }

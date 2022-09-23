@@ -144,7 +144,7 @@ export const ReactSortableTreeNodeRenderer: React.FunctionComponent<TreeRenderer
 
     return connectDropTarget(
         <div {...otherProps} className={classnames('rst__node', rowDirectionClass)}>
-            {scaffold}
+            {/* {scaffold} */}
             <div className="rst__nodeContent" style={style}>
                 {Children.map(children, child => cloneElement(child as any, { isOver, canDrop, draggedNode }))}
             </div>
