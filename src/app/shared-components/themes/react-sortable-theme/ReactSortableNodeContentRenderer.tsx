@@ -7,7 +7,7 @@ import { PageSortable, PageSortableMenuAction } from './sortables/PageSortable';
 
 const isDescendant = (older: TreeItem<IPage>, younger: TreeItem<IPage>): boolean => {
     return (
-        !!older.children &&
+        !!older?.children &&
         typeof older.children !== 'function' &&
         older.children.some((child: any) => child === younger || isDescendant(child, younger))
     );

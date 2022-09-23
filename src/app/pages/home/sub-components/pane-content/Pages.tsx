@@ -1,17 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IPage, PageType } from '../../../../data-access/entities/Page';
-import { ISection } from '../../../../data-access/entities/Section';
-import { SortableNavButton } from '../../../../shared-components/buttons/SortableNavButton';
-import { editors, getIconClass } from '../../../../shared-components/editors';
-import { sort, unique } from 'radash';
-import { ButtonType, Modal } from '../../../../shared-components/modal/Modal';
+import { editors } from '../../../../shared-components/editors';
+import { ButtonType } from '../../../../shared-components/modal/Modal';
 import { CreatableNavButton } from '../../../../shared-components/buttons/CreatableNavButton';
-import { Menu, MenuItem } from '@szhsin/react-menu';
 import { DataSource } from '../../../../../utilities/DataSource';
-import SortableTree, { TreeItem, getTreeFromFlatData, getFlatDataFromTree } from 'react-sortable-tree';
+import SortableTree, { TreeItem, getFlatDataFromTree } from 'react-sortable-tree';
 import { getTheme } from '../../../../shared-components/themes';
 import { IReactSortableNodeContentRendererExtraProps } from '../../../../shared-components/themes/react-sortable-theme/ReactSortableNodeContentRenderer';
 import { PageSortableMenuAction } from '../../../../shared-components/themes/react-sortable-theme/sortables/PageSortable';
+import { DeletePageModal } from './sub-components/DeletePageModal';
 
 interface IPagesProps {
     onCreate: (name: string, type: PageType) => Promise<void>;
@@ -33,13 +30,6 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
         document.addEventListener("click", async e => {
 
-            // if (renamePage != null && (e.target as HTMLElement).classList.contains("nav-button-input") === false) {
-            //     await onSavePage(renamePage, value);
-            //     setValue('');
-            //     setRenamePage(null);
-            //     return;
-            // }
-
             if (e.target instanceof HTMLButtonElement && (e.target as HTMLButtonElement).classList.contains("dropdown-toggle")) {
                 return;
             }
@@ -49,22 +39,15 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
     }, []);
 
-    // useEffect(() => {
-    //     if (inputElement?.current) {
-    //         inputElement.current.focus();
-    //     }
-    // })
+    const onDeletePage = async (deleteChildren: boolean, page: IPage) => {
 
-
-    const onDeletePage = async (type: ButtonType, page: IPage) => {
-
-        if (type !== 'Yes') {
+        if (deleteChildren === false) {
+            await onDelete(page);
             setDeletePage(null);
             return;
         }
-
-        await onDelete(page);
-        setDeletePage(null);
+    
+        
     }
 
     const onRenameClick = (page: IPage) => {
@@ -107,7 +90,16 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         // collapsing removes nodes from the data array, 
         // need to add back anything missing
         const dict = flat.reduce((a, v) => ({ ...a, [v.node._id]: v.node }), {} as { [key: string]: IPage })
-        const missing = pages.filter(w => dict[w._id] == null)
+        const missing = pages.filter(w => dict[w._id] == null);
+
+        const source = [...result, ...missing];
+        const hasError = source.filter(w => w.children.some(x => x == null));
+
+        if (hasError) {
+            debugger;
+            throw 'e'
+        }
+
         //
         onChange(DataSource.fromArray("_id", [...result, ...missing]))
     }
@@ -129,15 +121,22 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
             result.push(root)
         }
 
-        console.log('roots', roots)
-
         return result.filter(w => w.path.length === 1);
     }
 
     const onMenuClick = (action: PageSortableMenuAction, page: IPage) => {
-        switch(action) {
+        switch (action) {
             case PageSortableMenuAction.Rename:
                 onRenameClick(page);
+                break;
+            case PageSortableMenuAction.Delete:
+                setDeletePage(page);
+                break;
+            case PageSortableMenuAction.Duplicate:
+      
+                break;
+            case PageSortableMenuAction.Select:
+               
                 break;
         }
     }
@@ -174,12 +173,11 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                 {editors.map((w, i) => <a key={`add-page-menu-${i}`} onClick={() => setNewPageType(w.type)}><i className={w.icon}></i>&emsp;Add {w.displayName} Page</a>)}
             </div>
         </div>
-        {deletePage && <Modal
-            buttons={["Yes", "Cancel"]}
-            onClick={e => onDeletePage(e, deletePage)}
-            title="Delete Page?"
-        >
-            <p>Are you sure you wish to delete {deletePage.title}?</p>
-        </Modal>}
+        {deletePage && <DeletePageModal
+            all={pages.shallow().all()}
+            page={deletePage}
+            onClose={() => setDeletePage(null)}
+            onDelete={deleteChildren => onDeletePage(deleteChildren, deletePage)}
+        />}
     </>
 }
