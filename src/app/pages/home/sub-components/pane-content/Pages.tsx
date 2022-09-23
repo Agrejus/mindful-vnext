@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TreeView, TreeRowInfo, TreeNode } from 'react-draggable-tree';
 import { IPage, PageType } from '../../../../data-access/entities/Page';
 import { ISection } from '../../../../data-access/entities/Section';
 import { SortableNavButton } from '../../../../shared-components/buttons/SortableNavButton';
@@ -10,6 +9,7 @@ import { CreatableNavButton } from '../../../../shared-components/buttons/Creata
 import { Menu, MenuItem } from '@szhsin/react-menu';
 import { DataSource } from '../../../../../utilities/DataSource';
 import SortableTree, { TreeItem, getTreeFromFlatData, getFlatDataFromTree } from 'react-sortable-tree';
+import { ReactSortableTheme } from '../../../../shared-components/themes/react-sortable-theme';
 import 'react-sortable-tree/style.css';
 
 interface IPagesProps {
@@ -56,15 +56,6 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         }
     })
 
-    const getDescendant = (root: TreeNode, path: number[]): TreeNode | undefined => {
-        if (path.length == 0) {
-            return root
-        }
-
-        if (root.children) {
-            return getDescendant(root.children[path[0]], path.slice(1));
-        }
-    }
 
     const onDeletePage = async (type: ButtonType, page: IPage) => {
 
@@ -145,9 +136,9 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
         // collapsing removes nodes from the data array, 
         // need to add back anything missing
-        const dict = data.reduce((a, v) => ({ ...a, [v._id]: v }), {} as { [key: string]: IPage })
+        const dict = flat.reduce((a, v) => ({ ...a, [v.node._id]: v.node }), {} as { [key: string]: IPage })
         const missing = pages.filter(w => dict[w._id] == null)
-
+        //
         onChange(DataSource.fromArray("_id", [...result, ...missing]))
     }
 
@@ -173,6 +164,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         return result.filter(w => w.path.length === 1);
     }
 
+    //https://github.com/frontend-collective/react-sortable-tree
     return <>
         {newPageType != null && <CreatableNavButton key={"new-page"} defaultText="New Page" onSave={name => onCreateNewPage(name, newPageType)} />}
 
@@ -182,6 +174,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                     treeData={getTree()}
                     getNodeKey={w => w.node._id}
                     onChange={e => onTreeChange(e as any)}
+                    theme={ReactSortableTheme}
                 />
             }
             {/* {
