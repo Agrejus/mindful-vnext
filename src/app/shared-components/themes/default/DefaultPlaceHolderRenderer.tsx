@@ -2,9 +2,9 @@ import React from 'react';
 import { PlaceholderRendererProps } from 'react-sortable-tree';
 import { IPage } from '../../../data-access/entities/Page';
 import { classnames } from '../utils';
-import './ReactSortablePlaceHolderRenderer.scss';
+import './DefaultPlaceHolderRenderer.scss';
 
-export const ReactSortablePlaceHolderRenderer: React.FunctionComponent<PlaceholderRendererProps<IPage>> = (props) => {
+export const DefaultPlaceHolderRenderer: React.FunctionComponent<PlaceholderRendererProps<IPage>> = (props) => {
 
     const { canDrop, isOver } = props;
 

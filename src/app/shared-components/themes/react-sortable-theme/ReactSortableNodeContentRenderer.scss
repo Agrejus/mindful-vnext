@@ -1,7 +1,8 @@
 .rst__rowWrapper {
-    padding: 10px 10px 10px 0;
+    padding: 1px 1px 1px 0;
     height: 100%;
     box-sizing: border-box;
+    cursor: pointer;
   }
   
   .rst__rtl.rst__rowWrapper {
@@ -73,11 +74,14 @@
     vertical-align: middle;
   }
   
+  div.rst__rowContentsActive {
+    background-color: rgb(241, 241, 241);
+  }
+
   .rst__rowContents {
     position: relative;
     height: 100%;
     border: solid #bbb 1px;
-    border-left: none;
     box-shadow: 0 2px 2px -2px;
     padding: 0 5px 0 10px;
     border-radius: 2px;
@@ -87,6 +91,8 @@
     align-items: center;
     justify-content: space-between;
     background-color: white;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
   }
   
   .rst__rtl.rst__rowContents {

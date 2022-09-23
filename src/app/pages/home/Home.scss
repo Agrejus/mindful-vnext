@@ -251,7 +251,7 @@
         }
 
         button:hover {
-            background-color: rgb(241,241,244);
+            background-color: rgb(241,241,241);
         }
     }
 
@@ -260,9 +260,9 @@
     }
 
     .nav-button-active {
-        background-color: rgb(241,241,244);
-        border-bottom-left-radius: 6px;
-        border-top-left-radius: 6px;
+        // background-color: rgb(241,241,241) !important;
+        // border-bottom-left-radius: 6px;
+        // border-top-left-radius: 6px;
     }
 
     div.pages-add-btn-group {

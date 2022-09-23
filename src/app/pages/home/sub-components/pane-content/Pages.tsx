@@ -9,7 +9,9 @@ import { CreatableNavButton } from '../../../../shared-components/buttons/Creata
 import { Menu, MenuItem } from '@szhsin/react-menu';
 import { DataSource } from '../../../../../utilities/DataSource';
 import SortableTree, { TreeItem, getTreeFromFlatData, getFlatDataFromTree } from 'react-sortable-tree';
-import { ReactSortableTheme } from '../../../../shared-components/themes/react-sortable-theme';
+import { getDefaultTheme, getTheme } from '../../../../shared-components/themes';
+import { IReactSortableNodeContentRendererExtraProps } from '../../../../shared-components/themes/react-sortable-theme/ReactSortableNodeContentRenderer';
+import { PageSortableMenuAction } from '../../../../shared-components/themes/react-sortable-theme/sortables/PageSortable';
 
 interface IPagesProps {
     onCreate: (name: string, type: PageType) => Promise<void>;
@@ -26,19 +28,17 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
     const [isMenuVisible, setIsMenuVisible] = useState<boolean>(false);
     const [newPageType, setNewPageType] = useState<PageType | null>(null);
     const [renamePage, setRenamePage] = useState<IPage | null>(null);
-    const inputElement = useRef<HTMLInputElement | null>(null);
-    const [value, setValue] = useState<string>('');
 
     useEffect(() => {
 
         document.addEventListener("click", async e => {
 
-            if (renamePage != null && (e.target as HTMLElement).classList.contains("nav-button-input") === false) {
-                await onSavePage(renamePage, value);
-                setValue('');
-                setRenamePage(null);
-                return;
-            }
+            // if (renamePage != null && (e.target as HTMLElement).classList.contains("nav-button-input") === false) {
+            //     await onSavePage(renamePage, value);
+            //     setValue('');
+            //     setRenamePage(null);
+            //     return;
+            // }
 
             if (e.target instanceof HTMLButtonElement && (e.target as HTMLButtonElement).classList.contains("dropdown-toggle")) {
                 return;
@@ -49,11 +49,11 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
     }, []);
 
-    useEffect(() => {
-        if (inputElement?.current) {
-            inputElement.current.focus();
-        }
-    })
+    // useEffect(() => {
+    //     if (inputElement?.current) {
+    //         inputElement.current.focus();
+    //     }
+    // })
 
 
     const onDeletePage = async (type: ButtonType, page: IPage) => {
@@ -68,11 +68,11 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
     }
 
     const onRenameClick = (page: IPage) => {
+        // do this in a modal
         setRenamePage(page);
-        setValue(page.title);
     }
 
-    const onSavePage = async (page: IPage, name: string) => {
+    const onSaveRename = async (name: string, page: IPage) => {
 
         page.title = name;
         pages.set(page);
@@ -89,35 +89,6 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
     const onCreateNewPage = async (name: string, type: PageType) => {
         onCreate(name, type);
         setNewPageType(null);
-    }
-
-    const onBlur = async () => {
-
-        if (renamePage == null) {
-            return;
-        }
-
-        await onSavePage(renamePage, value);
-        setValue('');
-        setRenamePage(null);
-    }
-
-    const onKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-
-        if (e.which === 13) {
-            e.preventDefault();
-
-            if (renamePage != null) {
-                await onSavePage(renamePage, value);
-                setValue('');
-                setRenamePage(null);
-            }
-            return;
-        }
-    }
-
-    if (parent == null) {
-        return null;
     }
 
     const onTreeChange = (data: TreeItem<IPage>[]) => {
@@ -142,7 +113,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
     }
 
     const getTree = () => {
-        const roots = pages.all();
+        const roots = pages.shallow().all();
 
         const result: TreeItem<IPage>[] = [];
 
@@ -163,7 +134,21 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         return result.filter(w => w.path.length === 1);
     }
 
+    const onMenuClick = (action: PageSortableMenuAction, page: IPage) => {
+        switch(action) {
+            case PageSortableMenuAction.Rename:
+                onRenameClick(page);
+                break;
+        }
+    }
+
     //https://github.com/frontend-collective/react-sortable-tree
+    const themeExtraProps: IReactSortableNodeContentRendererExtraProps = {
+        onMenuClick,
+        onSelect: page => onSelect(page._id),
+        renamePage
+    }
+    //getTheme(themeExtraProps)
     return <>
         {newPageType != null && <CreatableNavButton key={"new-page"} defaultText="New Page" onSave={name => onCreateNewPage(name, newPageType)} />}
 
@@ -173,45 +158,9 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                     treeData={getTree()}
                     getNodeKey={w => w.node._id}
                     onChange={e => onTreeChange(e as any)}
-                    theme={ReactSortableTheme}
+                    theme={getDefaultTheme()}
                 />
             }
-            {/* {
-                pages.length > 0 && section.treeRoot && <TreeView
-                    root={section.treeRoot}
-                    selectedKeys={new Set<string>(section.selectedKeys)}
-                    rowHeight={36}
-                    rowContent={e => {
-
-                        const page = pages.get(e.node.key as any);
-
-                        if (!page) {
-                            return null;
-                        }
-
-                        return <SortableNavButton
-                            className={"page-item-button"}
-                            keyPart="page-sortable-key"
-                            displayField="pageName"
-                            icon={getIconClass(page.pageTypeId)}
-                            idField={'_id'}
-                            onClick={onSelect}
-                            dataItem={page}
-                            isSelected={page.isSelected}>
-                            {renamePage?._id === page._id && <input className='nav-button-input' ref={inputElement} onBlur={onBlur} onKeyDown={onKeyDown} onChange={e => setValue(e.target.value)} value={value} />}
-                            <Menu menuButton={<i className="bi bi-three-dots-vertical kanban-card-header-actions clickable pull-right" onClick={e => { e.preventDefault(); e.stopPropagation(); }}></i>} transition>
-                                <MenuItem onClick={() => onRenameClick(page)}><i className='fas fa-i-cursor'></i>&nbsp;Rename</MenuItem>
-                                <MenuItem onClick={() => void (0)}><i className='far fa-clone'></i>&nbsp;Duplicate</MenuItem>
-                                <MenuItem onClick={() => setDeletePage(page)}><i className='far fa-trash-alt text-danger'></i>&nbsp;Delete</MenuItem>
-                            </Menu>
-                        </SortableNavButton>
-                    }}
-                    onSelectedKeysChange={(keys: any, infos) => onSelectedKeysChange(keys, infos)}
-                    onCollapsedChange={onCollapsedChange}
-                    onMove={onMove}
-                    onCopy={onCopy}
-                />
-            } */}
         </div>
         <div className="btn-group dropup nav-button nav-button-add nav-button-split pages-add-btn-group">
             <button type="button" className="" onClick={() => onCreateNewPage("New Page", PageType.PlainText)}>
