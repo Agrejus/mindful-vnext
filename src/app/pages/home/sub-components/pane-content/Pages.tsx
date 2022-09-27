@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { IPage, PageType } from '../../../../data-access/entities/Page';
 import { editors } from '../../../../shared-components/editors';
-import { ButtonType } from '../../../../shared-components/modal/Modal';
 import { CreatableNavButton } from '../../../../shared-components/buttons/CreatableNavButton';
 import { DataSource } from '../../../../../utilities/DataSource';
-import SortableTree, { TreeItem, getFlatDataFromTree } from 'react-sortable-tree';
+import SortableTree, { } from 'react-sortable-tree';
 import { getTheme } from '../../../../shared-components/themes';
 import { IReactSortableNodeContentRendererExtraProps } from '../../../../shared-components/themes/react-sortable-theme/ReactSortableNodeContentRenderer';
 import { PageSortableMenuAction } from '../../../../shared-components/themes/react-sortable-theme/sortables/PageSortable';
 import { DeletePageModal } from './sub-components/DeletePageModal';
+import { RenameModal } from '../../../../shared-components/modal/RenameModal';
 
 interface IPagesProps {
     onCreate: (name: string, type: PageType) => Promise<void>;
     onSelect: (id: string) => Promise<void>;
     onChange: (dataSource: DataSource<IPage>) => Promise<void>;
-    onDelete: (page: IPage) => Promise<void>;
+    onDelete: (pageIds: string[]) => Promise<void>;
     pages: DataSource<IPage>;
 }
 
@@ -39,18 +39,15 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
     }, []);
 
-    const onDeletePage = async (deleteChildren: boolean, page: IPage) => {
-
-        if (deleteChildren === false) {
-            await onDelete(page);
-            setDeletePage(null);
-            return;
-        }
-    
-        
+    const onDeletePage = async (pageIds: string[]) => {
+        await onDelete(pageIds);
+        setDeletePage(null);
     }
 
-    const onRenameClick = (page: IPage) => {
+    const onRenameClick = (id: string) => {
+
+        const page = pages.get(id);
+
         // do this in a modal
         setRenamePage(page);
     }
@@ -74,69 +71,86 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         setNewPageType(null);
     }
 
-    const onTreeChange = (data: TreeItem<IPage>[]) => {
+    // const getTreeFromFlatData = (data: IPage[]): TreeItem<IPage>[] => {
+    //     const traverse = [...data];
+    //     const result: TreeItem<IPage>[] = [];
+    //     const skips: { [key: string]: any } = {};
+    //     const dictionary = data.reduce((a, v) => ({ ...a, [v._id]: v }), {} as { [key: string]: IPage });
 
-        const flat = getFlatDataFromTree({ treeData: data, getNodeKey: w => w.node._id });
+    //     for (let i = 0; i < traverse.length; i++) {
+    //         const item = traverse[i];
 
-        const result = flat.map(w => {
+    //         dictionary[item._id] = item;
 
-            const page = { ...w.node } as IPage;
-            page.children = (w.node.children as IPage[]).map(x => x._id);
-            page.path = w.path as string[];
+    //         if (skips[item._id]) {
+    //             continue
+    //         }
 
-            return page;
-        });
+    //         if (item.path.length > 1) {
 
-        // collapsing removes nodes from the data array, 
-        // need to add back anything missing
-        const dict = flat.reduce((a, v) => ({ ...a, [v.node._id]: v.node }), {} as { [key: string]: IPage })
-        const missing = pages.filter(w => dict[w._id] == null);
+    //             const parentId = item.path[item.path.length - 2];
+    //             const parent = dictionary[parentId];
 
-        const source = [...result, ...missing];
-        const hasError = source.filter(w => w.children.some(x => x == null));
+    //             parent.children = parent.children.map(w  => dictionary[w] as any)
 
-        if (hasError) {
-            debugger;
-            throw 'e'
-        }
+    //             continue;
+    //         }
 
-        //
-        onChange(DataSource.fromArray("_id", [...result, ...missing]))
-    }
+    //         result.push(dictionary[item._id] as TreeItem<IPage>);
+    //     }
+    //     debugger;
+    //     return result;
+    // }
 
-    const getTree = () => {
-        const roots = pages.all();
 
-        const result: TreeItem<IPage>[] = [];
+    // const getTree = () => {
+    //     const roots = pages.all();
+    //     debugger;
+    //     getTreeFromFlatData(roots);
+    //     const result: TreeItem<IPage>[] = [];
 
-        for (let i = 0; i < roots.length; i++) {
-            const root = roots[i] as TreeItem<IPage>;
+    //     for (let i = 0; i < roots.length; i++) {
+    //         const root = roots[i] as TreeItem<IPage>;
 
-            if (root.children.length === 0) {
-                result.push(root)
-                continue;
-            }
+    //         if (root.children.length === 0) {
+    //             result.push(root)
+    //             continue;
+    //         }
 
-            root.children = pages.many(root.children) as any;
-            result.push(root)
-        }
+    //         root.children = pages.many(root.children) as any;
+    //         result.push(root)
+    //     }
 
-        return result.filter(w => w.path.length === 1);
+    //     // const issues = result.filter(w => w.children.some(x => x == null));
+
+    //     // if (issues.length > 0) {
+    //     //     debugger;
+    //     //     for(let issue of issues) {
+    //     //         issue.children = roots.filter(w => w.path.length > 1 && w.path[w.path.length - 1] === issue._id) as any;
+    //     //     }
+    //     // }
+
+    //     return result.filter(w => w.path.length === 1);
+    // }
+
+    const onTreeChange = (data: IPage[]) => {
+        debugger;
+        onChange(DataSource.fromArray("_id", data))
     }
 
     const onMenuClick = (action: PageSortableMenuAction, page: IPage) => {
         switch (action) {
             case PageSortableMenuAction.Rename:
-                onRenameClick(page);
+                onRenameClick(page._id);
                 break;
             case PageSortableMenuAction.Delete:
                 setDeletePage(page);
                 break;
             case PageSortableMenuAction.Duplicate:
-      
+
                 break;
             case PageSortableMenuAction.Select:
-               
+
                 break;
         }
     }
@@ -147,20 +161,20 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         onSelect: page => onSelect(page._id),
         renamePage
     }
-    const theme = getTheme(themeExtraProps)
-    //const theme = getDefaultTheme();
+
+    const theme = getTheme(themeExtraProps);
+    console.log(pages)
+
     return <>
         {newPageType != null && <CreatableNavButton key={"new-page"} defaultText="New Page" onSave={name => onCreateNewPage(name, newPageType)} />}
 
         <div className="sort-container">
-            {
-                pages.length > 0 && <SortableTree
-                    treeData={getTree()}
-                    getNodeKey={w => w.node._id}
-                    onChange={e => onTreeChange(e as any)}
-                    theme={theme}
-                />
-            }
+            <SortableTree
+                treeData={pages.clone().all()}
+                getNodeKey={w => w.node._id}
+                onChange={onTreeChange}
+                theme={theme}
+            />
         </div>
         <div className="btn-group dropup nav-button nav-button-add nav-button-split pages-add-btn-group">
             <button type="button" className="" onClick={() => onCreateNewPage("New Page", PageType.PlainText)}>
@@ -177,7 +191,14 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
             all={pages.shallow().all()}
             page={deletePage}
             onClose={() => setDeletePage(null)}
-            onDelete={deleteChildren => onDeletePage(deleteChildren, deletePage)}
+            onDelete={onDeletePage}
+        />}
+        {renamePage && <RenameModal
+            initialValue={renamePage.title as any}
+            inputHeader="Please type a new page name"
+            onClose={() => setRenamePage(null)}
+            onSave={name => onSaveRename(name, renamePage)}
+            title='Rename Page'
         />}
     </>
 }

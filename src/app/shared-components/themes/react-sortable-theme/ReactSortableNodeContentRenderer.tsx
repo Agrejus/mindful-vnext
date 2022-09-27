@@ -1,11 +1,11 @@
-import React, { useRef } from 'react';
-import { NodeRendererProps, TreeItem } from 'react-sortable-tree';
+import React from 'react';
+import { NodeRendererProps } from 'react-sortable-tree';
 import { IPage } from '../../../data-access/entities/Page';
 import { classnames } from '../utils';
 import './ReactSortableNodeContentRenderer.scss';
 import { PageSortable, PageSortableMenuAction } from './sortables/PageSortable';
 
-const isDescendant = (older: TreeItem<IPage>, younger: TreeItem<IPage>): boolean => {
+const isDescendant = (older: IPage, younger: IPage): boolean => {
     return (
         !!older?.children &&
         typeof older.children !== 'function' &&
@@ -52,8 +52,6 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<ReactSort
         ...otherProps
     } = props;
     const rowDirectionClass = rowDirection === 'rtl' ? 'rst__rtl' : null;
-    const nodeTitle = title || node.title;
-    const nodeSubtitle = subtitle || node.subtitle;
 
     let handle: React.ReactNode | null = null;
     if (canDrag) {
@@ -85,7 +83,7 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<ReactSort
             </div>, { dropEffect: 'copy' });
         }
     }
-
+    
     const isDraggedDescendant = draggedNode && isDescendant(draggedNode, node);
     const isLandingPadActive = !didDrop && isDragging;
 

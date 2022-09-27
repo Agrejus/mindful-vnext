@@ -1,20 +1,19 @@
 import { IDbRecord } from 'pouchdb-entity-fabric';
+import { TreeItem } from 'react-sortable-tree';
 import { MindfulDocumentTypes } from '../MindfulDataContext';
 
-export interface IPage extends IDbRecord<MindfulDocumentTypes> {
-    title: string;
+
+interface IPageContents {
     content: any;
     sectionId: string;
     isPinned: boolean;
-    isSelected: boolean;
-    isContextMenuVisible?: boolean;
     isSynced?: boolean;
     createDateTime: string;
-    order: number;
     pageType: PageType;
-    children: string[];
-    path: string[];
-    expanded: boolean;
+}
+
+export interface IPage extends TreeItem<IDbRecord<MindfulDocumentTypes> & IPageContents> {
+
 }
 
 export enum PageType {

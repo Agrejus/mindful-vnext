@@ -8,7 +8,6 @@ import { ReactSortablePlaceHolderRenderer } from './react-sortable-theme/ReactSo
 
 export const getTheme = (extraProps: IReactSortableNodeContentRendererExtraProps) => {
 
-
     return {
         nodeContentRenderer: (props: any) => {
             const final = { ...props, ...extraProps as any }

@@ -10,6 +10,7 @@ export enum MindfulDocumentTypes {
     Notifications = "Notifications",
     Pages = "Pages",
     Sections = "Sections",
+    TreeData = "TreeData",
 }
 
 export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
@@ -44,6 +45,7 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
                 live: true,
                 retry: true
             }).on('change', (info) => {
+                console.log('change', info);
                 // handle change
                 if (callbacks?.change) {
                     callbacks.change(info)
@@ -66,6 +68,7 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
                     callbacks.denied(err)
                 }
             }).on('complete', function (info) {
+
                 // handle complete
                 console.log('sync complete', info);
                 if (callbacks?.complete) {

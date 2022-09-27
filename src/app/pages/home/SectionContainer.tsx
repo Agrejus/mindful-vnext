@@ -43,6 +43,7 @@ export const SectionContainer: React.FC<ISectionContainerProps> = (props) => {
             setSections(sort(allSections, w => w.order, false));
             setSelectedSection(section);
 
+            console.log('sections setup')
             if (section) {
 
                 // setSelectedSection(section);

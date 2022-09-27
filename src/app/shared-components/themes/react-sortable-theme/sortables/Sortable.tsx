@@ -14,6 +14,8 @@ interface SortableProps {
 export const Sortable: React.FunctionComponent<SortableProps> = (props) => {
 
     const click = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        e.preventDefault();
+        e.stopPropagation();
         props.onClick(props.dataItem[props.idField]);
     }
 

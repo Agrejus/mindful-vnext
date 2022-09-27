@@ -29,7 +29,7 @@ interface IHomeProps {
     pages: DataSource<IPage>;
     onPageChange: (dataSource: DataSource<IPage>) => Promise<void>;
     onPageCreate: (name: string, type: PageType) => Promise<void>;
-    onPageDelete: (page: IPage) => Promise<void>;
+    onPageDelete: (pageIds: string[]) => Promise<void>;
     onPageSelect: (id: string) => Promise<void>;
     onContentChange: (content: any) => void;
 }
@@ -37,7 +37,7 @@ interface IHomeProps {
 export const Home: React.FunctionComponent<IHomeProps> = (props) => {
 
     const { sections, selectedSection, onSectionChange, onSectionChanges, onSectionCreate, onSectionDelete, onSectionSelect,
-    pages, selectedPage, onContentChange, onPageChange, onPageCreate, onPageDelete, onPageSelect } = props;
+        pages, selectedPage, onContentChange, onPageChange, onPageCreate, onPageDelete, onPageSelect } = props;
     const [activeTool, setActiveTool] = useState<ToolType | null>(null);
     const [searchText, setSearchText] = useState<string>("");
     const [showArchivedSections, setShowArchivedSections] = useState<boolean>(false);
@@ -58,8 +58,6 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
         }
         return null
     }
-
-   
 
     return <React.Fragment>
         <div id="full-modal-portal"></div>

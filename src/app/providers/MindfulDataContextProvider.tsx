@@ -11,26 +11,26 @@ export const MindfulDataContextProvider: React.FunctionComponent<MindfulDataCont
 
     const { children } = props;
 
-    useEffect(() => {
-        // let sync: { cancel: () => void; } | null = null;
-        // const setup = async () => {
-        //     const context = dbContextFactory();
-        //     sync = await context.initializeSync({
-        //         change: (info) => {
+    // useEffect(() => {
+    //     let sync: { cancel: () => void; } | null = null;
+    //     const setup = async () => {
+    //         const context = dbContextFactory();
+    //         sync = await context.initializeSync({
+    //             change: (info) => {
 
-        //         }
-        //     })
-        // }
+    //             }
+    //         })
+    //     }
 
-        // setup();
+    //     setup();
 
 
-        // return () => {
-        //     if (sync != null) {
-        //         sync.cancel();
-        //     }
-        // }
-    }, [])
+    //     return () => {
+    //         if (sync != null) {
+    //             sync.cancel();
+    //         }
+    //     }
+    // }, [])
 
     return (
         <Context.Provider value={dbContextFactory}>

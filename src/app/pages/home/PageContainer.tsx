@@ -24,7 +24,7 @@ const updatePagesDebounced = debounce({ delay: 1500 }, throttle({ interval: 1500
 
     const s = performance.now()
     const linked = await context.pages.link(...pages);
-   
+
     await context.pages.markDirty(...linked);
     await context.saveChanges();
     const e = performance.now();
@@ -38,22 +38,25 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
     const [pages, setPages] = useState<DataSource<IPage>>(DataSource.fromArray<IPage>("_id", []));
     const [selectedPage, setSelectedPage] = useState<IPage | undefined>(undefined);
 
+
     const dbContextFactory = useMindfulDataContext();
+
 
     useEffect(() => {
 
         const setup = async () => {
             if (selectedSection != null) {
+                console.log('setup')
                 const context = dbContextFactory();
                 const allPages = await context.pages.filter(w => w.sectionId === selectedSection._id);
 
                 setPages(DataSource.fromArray("_id", allPages));
 
-                const page = allPages.find(w => w.isSelected === true);
+                // const page = allPages.find(w => w.isSelected === true);
 
-                if (page) {
-                    setSelectedPage({ ...page });
-                }
+                // if (page) {
+                //     setSelectedPage({ ...page });
+                // }
             }
         }
 
@@ -77,7 +80,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
     }
 
     const onPageChange = async (dataSource: DataSource<IPage>) => {
-
+        debugger;
         const p = dataSource.shallow();
 
         if (selectedPage != null) {
@@ -107,37 +110,29 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
             isPinned: false,
             content: getDefaultContent(type),
             createDateTime: moment().format(),
-            order: 0,
-            pageType: type,
-            isSelected: false,
-            path: [],
-            children: [],
-            expanded: false,
-            isContextMenuVisible: false
+            pageType: type
         });
-
-        page.path = [page._id]
 
         const dataSource = pages.shallow();
         dataSource.push(page)
         await context.saveChanges();
         const final = await context.pages.all()
 
-        setPages(DataSource.fromArray("_id", final))
+        setPages(DataSource.fromArray("_id", final));
     }
 
-    const onPageDelete = async (page: IPage) => {
+    const onPageDelete = async (pageIds: string[]) => {
 
         // needs some love
         const context = dbContextFactory();
-        await context.pages.remove(page._id);
+        await context.pages.remove(...pageIds);
 
-        const parent = pages.find(w => w.children.includes(page._id))
+        // const parent = pages.find(w => w.children.includes(page._id))
 
-        if (parent) {
-            const [linkedParent] = await context.pages.link(parent);
-            linkedParent.children = linkedParent.children.filter(w => w !== page._id)
-        }
+        // if (parent) {
+        //     const [linkedParent] = await context.pages.link(parent);
+        //     linkedParent.children = linkedParent.children.filter(w => w !== page._id)
+        // }
 
         await context.saveChanges();
 
@@ -154,21 +149,22 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
             return;
         }
 
-        const changedPages = pages.all();
+        const changedPages = pages.clone().all();
 
-        for (let page of changedPages) {
-            if (page._id === id) {
-                page.isSelected = true;
-                setSelectedPage(page)
-                continue;
-            }
+        // for (let page of changedPages) {
+        //     if (page._id === id) {
+        //         page.isSelected = true;
+        //         console.log('onPageSelect', page)
+        //         setSelectedPage(page)
+        //         continue;
+        //     }
 
-            page.isSelected = false;
-        }
+        //     page.isSelected = false;
+        // }
 
-        setPages(DataSource.fromArray("_id", changedPages))
+        //setPages(DataSource.fromArray("_id", changedPages))
 
-        updatePagesDebounced(dbContextFactory, changedPages, () => { });
+        //updatePagesDebounced(dbContextFactory, changedPages, () => { });
     }
 
 
