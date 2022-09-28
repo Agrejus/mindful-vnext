@@ -269,6 +269,13 @@
     font-size: 70%;
     line-height: 1;
   }
+
+  div.rst__rowSelected {
+    div.rst__rowContents {
+      font-weight: 600;
+      background-color: rgb(245, 245, 245);
+    }
+  }
   
   .rst__collapseButton,
   .rst__expandButton {

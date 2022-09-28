@@ -19,7 +19,7 @@ interface IPageContainerProps {
     onSectionSelect: (id: string) => Promise<void>;
 }
 
-const updatePagesDebounced = debounce({ delay: 1500 }, throttle({ interval: 1500 }, async (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => {
+const updatePagesDebounced = debounce({ delay: 600 }, throttle({ interval: 600 }, async (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => {
     const context = dbContextFactory();
 
     const s = performance.now()
@@ -80,17 +80,18 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
         const p = dataSource.shallow();
 
-        if (selectedPage != null) {
-            const selected = dataSource.get(selectedPage._id)
+        // if (selectedPage != null) {
+        //     const selected = dataSource.get(selectedPage._id)
 
-            if (p.set(selected)) {
-                setSelectedPage(selected)
-            }
-        }
+        //     if (p.set(selected)) {
+        //         setSelectedPage(selected)
+        //     }
+        // }
+        console.log('onPageChange', dataSource)
 
         updatePagesDebounced(dbContextFactory, p.all(), () => { })
 
-        setPages(p.shallow())
+        setPages(p)
     }
 
 
@@ -103,7 +104,8 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         const context = dbContextFactory();
         const [page] = await context.pages.add({
             sectionId: selectedSection._id,
-            title: name,
+            pageName: name,
+            title: "",
             isPinned: false,
             content: getDefaultContent(type),
             createDateTime: moment().format(),
@@ -132,11 +134,11 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         const context = dbContextFactory();
         await context.pages.remove(page._id);
 
-        const parent = pages.find(w => w.children.includes(page._id))
+        const parent = pages.find(w => w.children.some(x => x.id === page._id))
 
         if (parent) {
             const [linkedParent] = await context.pages.link(parent);
-            linkedParent.children = linkedParent.children.filter(w => w !== page._id)
+            linkedParent.children = linkedParent.children.filter(w => w.id !== page._id)
         }
 
         await context.saveChanges();
@@ -153,22 +155,27 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         if (selectedSection == null) {
             return;
         }
-
-        const changedPages = pages.all();
-
+        debugger;
+        const changedPages = pages.shallow().all();
+        const changes: IPage[] = []
+        console.log('onPageSelect', pages)
         for (let page of changedPages) {
             if (page._id === id) {
                 page.isSelected = true;
-                setSelectedPage(page)
+                setSelectedPage(page);
+                changes.push(page)
                 continue;
             }
 
-            page.isSelected = false;
+            if (page._id !== id && page.isSelected === true) {
+                page.isSelected = false;
+                changes.push(page)
+            }
         }
 
         setPages(DataSource.fromArray("_id", changedPages))
 
-        updatePagesDebounced(dbContextFactory, changedPages, () => { });
+        updatePagesDebounced(dbContextFactory, changes, () => { });
     }
 
 

@@ -2,7 +2,8 @@ import { IDbRecord } from 'pouchdb-entity-fabric';
 import { MindfulDocumentTypes } from '../MindfulDataContext';
 
 export interface IPage extends IDbRecord<MindfulDocumentTypes> {
-    title: string;
+    title: React.ReactNode;
+    pageName: string;
     content: any;
     sectionId: string;
     isPinned: boolean;
@@ -12,9 +13,14 @@ export interface IPage extends IDbRecord<MindfulDocumentTypes> {
     createDateTime: string;
     order: number;
     pageType: PageType;
-    children: string[];
+    children: IPageChild[];
     path: string[];
     expanded: boolean;
+}
+
+export interface IPageChild {
+    id: string;
+    children: IPageChild[]
 }
 
 export enum PageType {

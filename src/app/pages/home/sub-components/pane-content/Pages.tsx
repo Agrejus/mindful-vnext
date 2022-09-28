@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { IPage, PageType } from '../../../../data-access/entities/Page';
+import { IPage, IPageChild, PageType } from '../../../../data-access/entities/Page';
 import { editors } from '../../../../shared-components/editors';
-import { ButtonType } from '../../../../shared-components/modal/Modal';
 import { CreatableNavButton } from '../../../../shared-components/buttons/CreatableNavButton';
 import { DataSource } from '../../../../../utilities/DataSource';
 import SortableTree, { TreeItem, getFlatDataFromTree } from 'react-sortable-tree';
 import { getTheme } from '../../../../shared-components/themes';
 import { IReactSortableNodeContentRendererExtraProps } from '../../../../shared-components/themes/react-sortable-theme/ReactSortableNodeContentRenderer';
-import { PageSortableMenuAction } from '../../../../shared-components/themes/react-sortable-theme/sortables/PageSortable';
+import { PageSortable, PageSortableMenuAction } from '../../../../shared-components/themes/react-sortable-theme/sortables/PageSortable';
 import { DeletePageModal } from './sub-components/DeletePageModal';
+import { RenameModal } from '../../../../shared-components/modal/RenameModal';
+import 'react-sortable-tree/style.css';
 
 interface IPagesProps {
     onCreate: (name: string, type: PageType) => Promise<void>;
@@ -46,8 +47,8 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
             setDeletePage(null);
             return;
         }
-    
-        
+
+
     }
 
     const onRenameClick = (page: IPage) => {
@@ -81,7 +82,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         const result = flat.map(w => {
 
             const page = { ...w.node } as IPage;
-            page.children = (w.node.children as IPage[]).map(x => x._id);
+            page.children = (w.node.children as IPage[]).map(x => ({ id: x._id, children: x.children } as IPageChild));
             page.path = w.path as string[];
 
             return page;
@@ -95,13 +96,14 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         const source = [...result, ...missing];
         const hasError = source.filter(w => w.children.some(x => x == null));
 
-        if (hasError) {
+        if (hasError.length > 0) {
             debugger;
             throw 'e'
         }
 
-        //
-        onChange(DataSource.fromArray("_id", [...result, ...missing]))
+        console.log('change', result, missing);
+        const final = [...result, ...missing]
+        onChange(DataSource.fromArray("_id", final.map(w => ({...w, title: ""}))))
     }
 
     const getTree = () => {
@@ -117,11 +119,27 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                 continue;
             }
 
-            root.children = pages.many(root.children) as any;
+            root.children = root.children.map((w: any) => {
+
+                const r = w._id != null ? pages.get(w._id) : pages.get(w.id)
+                return {
+                    ...r, title: (() => <PageSortable
+                        onClick={() => onSelect(w._id)}
+                        node={w}
+                        onMenuClick={action => onMenuClick(action, w)}
+                    />) as any
+                }
+            }) as any;
             result.push(root)
         }
 
-        return result.filter(w => w.path.length === 1);
+        return result.filter(w => w.path.length === 1).map(w => ({
+            ...w, title: (() => <PageSortable
+                onClick={() => onSelect(w._id)}
+                node={w}
+                onMenuClick={action => onMenuClick(action, w)}
+            />) as any
+        } as TreeItem<IPage>));
     }
 
     const onMenuClick = (action: PageSortableMenuAction, page: IPage) => {
@@ -133,10 +151,10 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                 setDeletePage(page);
                 break;
             case PageSortableMenuAction.Duplicate:
-      
+
                 break;
             case PageSortableMenuAction.Select:
-               
+
                 break;
         }
     }
@@ -158,7 +176,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                     treeData={getTree()}
                     getNodeKey={w => w.node._id}
                     onChange={e => onTreeChange(e as any)}
-                    theme={theme}
+                //theme={theme}
                 />
             }
         </div>
@@ -178,6 +196,13 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
             page={deletePage}
             onClose={() => setDeletePage(null)}
             onDelete={deleteChildren => onDeletePage(deleteChildren, deletePage)}
+        />}
+        {renamePage && <RenameModal
+            initialValue={renamePage.pageName}
+            inputHeader="Page Title"
+            title="Rename Page"
+            onClose={() => setRenamePage(null)}
+            onSave={name => onSaveRename(name, renamePage)}
         />}
     </>
 }

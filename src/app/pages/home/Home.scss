@@ -187,6 +187,10 @@
         padding: 0 5px 5px 5px;
     }
 
+    div.page-item-button-selected {
+        background-color: red !important;
+    }
+
     div.page-item-button {
         padding-left: 5px;
         background-color: transparent;

@@ -52,6 +52,7 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<ReactSort
         ...otherProps
     } = props;
     const rowDirectionClass = rowDirection === 'rtl' ? 'rst__rtl' : null;
+    const rowSelectedClass = node.isSelected ? "rst__rowSelected" : ""
     const nodeTitle = title || node.title;
     const nodeSubtitle = subtitle || node.subtitle;
 
@@ -109,7 +110,7 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<ReactSort
                 {node.expanded && !isDragging && <div style={{ width: scaffoldBlockPxWidth }} className={classnames('rst__lineChildren', rowDirectionClass)} />}
             </div>}
 
-        <div className={classnames('rst__rowWrapper', rowDirectionClass)}>
+        <div className={classnames('rst__rowWrapper', rowDirectionClass, rowSelectedClass)}>
             {/* Set the row preview to be used during drag and drop */}
             {connectDragPreview(
                 <div
