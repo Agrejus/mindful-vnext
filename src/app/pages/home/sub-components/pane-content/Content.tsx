@@ -17,7 +17,6 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
     const [isWdigetModalVisible, setIsWdigetModalVisible] = useState(false);
     const { onChange, page, section } = props;
 
-
     const onAddWidgetClick = () => {
         setIsWdigetModalVisible(true);
     }
@@ -27,12 +26,12 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
     const pageTitlePrefix = getDisplayName(page.pageType);
 
     return <div className="page-content-pane">
-        {!!page.title && <div className="page-content-pane-title">
+        {!!page.pageName && <div className="page-content-pane-title">
             <div className="page-header-actions-container">
                 <HoverExpandButton className="text-default" text="share" iconClassName="fas fa-user-plus" />
                 {areWidgetsAvailable && <HoverExpandButton onClick={onAddWidgetClick} className="text-default" text="widgets" iconClassName={icon} />}
             </div>
-            <h4>{page.title}</h4>
+            <h4>{page.pageName}</h4>
             <small>{moment(page.createDateTime).format('dddd, MMMM Do YYYY, h:mm A')}</small>
             <hr />
         </div>}

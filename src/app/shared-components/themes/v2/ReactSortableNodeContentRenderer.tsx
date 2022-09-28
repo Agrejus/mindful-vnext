@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { NodeRendererProps, TreeItem } from 'react-sortable-tree';
 import { IPage } from '../../../data-access/entities/Page';
 import { classnames } from '../utils';
@@ -11,6 +11,7 @@ const isDescendant = (older: TreeItem<IPage>, younger: TreeItem<IPage>): boolean
         older.children.some((child: any) => child === younger || isDescendant(child, younger))
     );
 }
+
 
 export const ReactSortableNodeContentRenderer: React.FunctionComponent<NodeRendererProps<IPage>> = (props) => {
     const {
@@ -39,16 +40,28 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<NodeRende
         rowDirection,
         ...otherProps
     } = props;
-    const rowDirectionClass = rowDirection === 'rtl' ? 'rst__rtl' : null;
-    const rowSelectedClass = node.isSelected ? "rst__rowSelected" : ""
     const nodeTitle = title || node.title;
+    const nodeSubtitle = subtitle || node.subtitle;
+    const rowDirectionClass = rowDirection === 'rtl' ? 'rst__rtl' : null;
 
     let handle: React.ReactNode | null = null;
     if (canDrag) {
-        //, node.isSelected && "rst__rowContentsActive"
-        // Show the handle used to initiate a drag-and-drop
         handle = connectDragSource(<div className={classnames('rst__rowContents', (!canDrag && 'rst__rowContentsDragDisabled'), rowDirectionClass)} >
-            {typeof nodeTitle === 'function' ? nodeTitle({ node, path, treeIndex }) : nodeTitle}
+            <div className={classnames('rst__rowLabel', rowDirectionClass)}>
+                <span className={classnames('rst__rowTitle', node.subtitle && 'rst__rowTitleWithSubtitle')}>
+                    {typeof nodeTitle === 'function' ? nodeTitle({ node, path, treeIndex }) : nodeTitle}
+                </span>
+
+                {nodeSubtitle && <span className="rst__rowSubtitle">
+                    {typeof nodeSubtitle === 'function' ? nodeSubtitle({ node, path, treeIndex }) : nodeSubtitle}
+                </span>}
+            </div>
+
+            <div className="rst__rowToolbar">
+                {buttons && buttons.map((btn, index) => <div key={index} className="rst__toolbarButton">
+                    {btn}
+                </div>)}
+            </div>
         </div>, { dropEffect: 'copy' });
     }
 
@@ -75,7 +88,7 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<NodeRende
                 {node.expanded && !isDragging && <div style={{ width: scaffoldBlockPxWidth }} className={classnames('rst__lineChildren', rowDirectionClass)} />}
             </div>}
 
-        <div className={classnames('rst__rowWrapper', rowDirectionClass, rowSelectedClass)}>
+        <div className={classnames('rst__rowWrapper', rowDirectionClass)}>
             {/* Set the row preview to be used during drag and drop */}
             {connectDragPreview(
                 <div
@@ -90,6 +103,7 @@ export const ReactSortableNodeContentRenderer: React.FunctionComponent<NodeRende
                     )}
                     style={{ opacity: isDraggedDescendant ? 0.5 : 1, ...style, }}>
                     {handle}
+
                 </div>
             )}
         </div>

@@ -59,8 +59,6 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
         return null
     }
 
-   
-
     return <React.Fragment>
         <div id="full-modal-portal"></div>
         <SubHeader

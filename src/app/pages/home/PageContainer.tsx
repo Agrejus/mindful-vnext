@@ -23,7 +23,10 @@ const updatePagesDebounced = debounce({ delay: 600 }, throttle({ interval: 600 }
     const context = dbContextFactory();
 
     const s = performance.now()
-    const linked = await context.pages.link(...pages);
+    const linked = await context.pages.link(...pages.map(w => {
+        delete w.title;
+        return w;
+    }));
    
     await context.pages.markDirty(...linked);
     await context.saveChanges();
@@ -155,10 +158,10 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         if (selectedSection == null) {
             return;
         }
-        debugger;
+
         const changedPages = pages.shallow().all();
         const changes: IPage[] = []
-        console.log('onPageSelect', pages)
+
         for (let page of changedPages) {
             if (page._id === id) {
                 page.isSelected = true;

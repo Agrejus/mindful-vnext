@@ -30,14 +30,8 @@ export const PageSortable: React.FC<PageSortableProps> = (props) => {
         toggleMenu(true);
     };
 
-    const classNames = ['page-item-button']
-
-    if (node.isSelected === true) {
-        classNames.push('page-item-button-selected')
-    }
-
     return <Sortable
-        className={classNames.join(' ')}
+        className='page-item-button'
         keyPart="page-sortable-key"
         displayField="pageName"
         icon={getIconClass(node.pageType)}
