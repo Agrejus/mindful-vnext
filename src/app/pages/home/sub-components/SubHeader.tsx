@@ -1,10 +1,13 @@
+import moment from 'moment';
 import React, { useState } from 'react';
+import { IPage } from '../../../data-access/entities/Page';
 
 interface ISubHeaderProps {
     onToggleArchivedSections: () => void;
     onNavigateToTool: (tool: ToolType) => void;
     searchText: string;
     onSearchTextChanged: (value:string) => void;
+    selectedPage?: IPage;
 }
 
 interface Navigation {
@@ -18,7 +21,7 @@ export type ToolType = "JsonPrettyPrint" | "CSharpToTypescript"
 
 export const SubHeader: React.FunctionComponent<ISubHeaderProps> = (props) => {
 
-    const {onToggleArchivedSections, onNavigateToTool, searchText, onSearchTextChanged} = props;
+    const {onToggleArchivedSections, onNavigateToTool, searchText, onSearchTextChanged, selectedPage} = props;
     const [navigationItems, setNavigationItems] = useState<Navigation[]>([]);
 
     const onBackClick = () => {
@@ -65,6 +68,8 @@ export const SubHeader: React.FunctionComponent<ISubHeaderProps> = (props) => {
             <span className="separator"></span>
             <i className="bi bi-braces clickable" onClick={() => onNavigateToTool("JsonPrettyPrint" )}></i>
             <i className="bi bi-arrow-left-right clickable" onClick={() => onNavigateToTool("CSharpToTypescript" )}></i>
+            {selectedPage && <span style={{ minWidth: 400, textAlign: "center", display: "inline-block" }}>{selectedPage.pageName}&emsp;<small style={{fontSize: 12, color: "rgb(150, 150, 150)"}}>{moment(selectedPage.createDateTime).format('dddd, MMMM Do YYYY, h:mm A')}</small></span>}
+            
             <input className="form-control pull-right" type="text" placeholder="Search..." value={searchText} onChange={e => onSearchTextChanged(e.target.value)} />
         </div>
     </>

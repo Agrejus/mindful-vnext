@@ -71,6 +71,7 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
             onToggleArchivedSections={() => setShowArchivedSections(w => !w)}
             searchText={searchText}
             onSearchTextChanged={setSearchText}
+            selectedPage={selectedPage}
         />
         <div className="page-container" id="home-page-container">
             <Search searchText={searchText} />

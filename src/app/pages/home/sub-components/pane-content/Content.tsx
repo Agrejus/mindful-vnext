@@ -26,7 +26,7 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
     const pageTitlePrefix = getDisplayName(page.pageType);
 
     return <div className="page-content-pane">
-        {!!page.pageName && <div className="page-content-pane-title">
+        {/* {!!page.pageName && <div className="page-content-pane-title">
             <div className="page-header-actions-container">
                 <HoverExpandButton className="text-default" text="share" iconClassName="fas fa-user-plus" />
                 {areWidgetsAvailable && <HoverExpandButton onClick={onAddWidgetClick} className="text-default" text="widgets" iconClassName={icon} />}
@@ -34,7 +34,7 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
             <h4>{page.pageName}</h4>
             <small>{moment(page.createDateTime).format('dddd, MMMM Do YYYY, h:mm A')}</small>
             <hr />
-        </div>}
+        </div>} */}
         {render(page.pageType, {
             content: page.content,
             onChange: onChange

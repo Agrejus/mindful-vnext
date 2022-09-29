@@ -6,8 +6,9 @@
 }
 
 .sortable-tab-selected {
-    background-color: $dark-turquoise !important;
-    color: white;
+    // background-color: $dark-turquoise !important;
+    // color: white;
+    z-index: 9999;
 }
 
 .sortable-tab {
@@ -19,9 +20,12 @@
     color: black;
     margin: 1px;
     height: 30px;
-    cursor: grab;
     padding: 5px 15px;
-    border-radius: 30px;
+    border-top-right-radius: 6px;
+    border-top-left-radius: 6px;
+    border-left: 1px solid rgb(200, 200, 200);
+    border-right: 1px solid rgb(200, 200, 200);
+    border-top: 1px solid rgb(200, 200, 200);
 
     i {
         vertical-align: middle;
@@ -43,13 +47,26 @@
 }
 
 .sortable-list {
+    position: relative;
     user-select: none;
     display: flex;
     justify-content: flex-start;
-    padding: 3px;
-    border-radius: 40px;
-    background-color: rgb(245, 245, 245);
-    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    // padding: 3px;
+    // border-radius: 40px;
+    // background-color: rgb(245, 245, 245);
+    // box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+.sortable-list::before {
+    content: ' ';
+    border-bottom: 1px solid rgb(200, 200, 200);
+    width: 100%;
+    position: absolute;
+    bottom: 1px;
+    // padding: 3px;
+    // border-radius: 40px;
+    // background-color: rgb(245, 245, 245);
+    // box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
 
 .page-content-pane {
