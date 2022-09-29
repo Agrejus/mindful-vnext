@@ -8,7 +8,8 @@ interface SortableProps {
     icon?: string;
     dataItem: any;
     className?: string;
-    onContextMenu?:(e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    onContextMenu?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    isDirty?: boolean;
 }
 
 export const Sortable: React.FunctionComponent<SortableProps> = (props) => {
@@ -23,24 +24,16 @@ export const Sortable: React.FunctionComponent<SortableProps> = (props) => {
         additionalClassNames = additionalClassNames.concat(props.className.split(' '));
     }
 
-    const spanStyle: React.CSSProperties = {
-        backgroundColor: props.dataItem.color,
-        position: "absolute",
-        width: "10px",
-        top: 0,
-        bottom: 0,
-        left: 0,
-        borderTopLeftRadius: "5px",
-        borderBottomLeftRadius: "5px"
-    };
 
     const style: React.CSSProperties = {
-        cursor: "pointer"
+        cursor: "pointer",
+        position: "relative"
     };
     const className = additionalClassNames.join(' ');
 
     return <div className={className} onClick={click} style={{ ...style }} onContextMenu={props.onContextMenu}>
-        {!!props.dataItem.color && <><span style={spanStyle}></span>&nbsp;</>}
+
+        {props.isDirty === true && <i className="fas fa-circle dirty-icon"></i>}
         {!!props.icon && <><i className={`${props.icon} icon-md display-icon`}></i>&nbsp;</>}
         {props.dataItem[props.displayField]}
         {props.children}

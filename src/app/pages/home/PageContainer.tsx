@@ -1,13 +1,12 @@
 import moment from 'moment';
-import { debounce, throttle } from 'radash';
 import React, { useEffect, useState } from 'react';
 import { DataSource } from '../../../utilities/DataSource';
 import { IPage, PageType } from '../../data-access/entities/Page';
 import { ISection } from '../../data-access/entities/Section';
-import { MindfulDataContextFactory } from '../../data-access/MindfulDataContext';
 import { useMindfulDataContext } from '../../providers/MindfulDataContextProvider';
 import { getDefaultContent } from '../../shared-components/editors';
 import { Home } from './Home';
+import { queuePageChange } from '../../../utilities/PageUpdater';
 
 interface IPageContainerProps {
     sections: ISection[]
@@ -19,27 +18,14 @@ interface IPageContainerProps {
     onSectionSelect: (id: string) => Promise<void>;
 }
 
-const updatePagesDebounced = debounce({ delay: 600 }, throttle({ interval: 600 }, async (dbContextFactory: MindfulDataContextFactory, pages: IPage[], done: () => void) => {
-    const context = dbContextFactory();
-
-    const s = performance.now()
-    const linked = await context.pages.link(...pages.map(w => {
-        delete w.title;
-        return w;
-    }));
-   
-    await context.pages.markDirty(...linked);
-    await context.saveChanges();
-    const e = performance.now();
-    console.log('updatePagesDebounced', e - s)
-    done();
-}))
+export type DirtyPages = { [key:string]: true }
 
 export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
     const { children, sections, selectedSection, onSectionChange, onSectionChanges, onSectionSelect } = props;
     const [pages, setPages] = useState<DataSource<IPage>>(DataSource.fromArray<IPage>("_id", []));
     const [selectedPage, setSelectedPage] = useState<IPage | undefined>(undefined);
+    const [dirtyPages, setDirtyPages] = useState<DirtyPages>({})
 
     const dbContextFactory = useMindfulDataContext();
 
@@ -56,6 +42,8 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
                 if (page) {
                     setSelectedPage({ ...page });
+                } else {
+                    setSelectedPage(undefined);
                 }
             }
         }
@@ -90,9 +78,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         //         setSelectedPage(selected)
         //     }
         // }
-        console.log('onPageChange', dataSource)
-
-        updatePagesDebounced(dbContextFactory, p.all(), () => { })
+        queuePageChange('onPageChange', dbContextFactory, p.all(), () => { })
 
         setPages(p)
     }
@@ -178,7 +164,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
         setPages(DataSource.fromArray("_id", changedPages))
 
-        updatePagesDebounced(dbContextFactory, changes, () => { });
+        queuePageChange('onPageSelect', dbContextFactory, changes, () => { });
     }
 
 
@@ -188,8 +174,10 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
             return;
         }
 
+        const p = pages.shallow();
         const page = { ...selectedPage }
         page.content = content;
+        p.set(page);
 
         // // move to worker?
         // if (section.widgets && section.widgets.length > 0) {
@@ -214,9 +202,31 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         //     };
         // }
 
-        setSelectedPage(page)
+        queuePageChange('onContentChange', dbContextFactory, [page], () => {
+            onTogglePageDirty(page._id, false)
+        })
 
-        updatePagesDebounced(dbContextFactory, [page], () => { })
+        setSelectedPage(page);
+        setPages(p);
+        onTogglePageDirty(page._id, true);
+    }
+
+    const onTogglePageDirty = (id: string, isDirty: boolean) => {
+
+        if (isDirty === false) {
+            setDirtyPages(w => {
+                const clone = {...w}
+                delete clone[id];
+                return clone;
+            });
+            return;
+        }
+
+        setDirtyPages(w => {
+            const clone = {...w}
+            clone[id] = true;
+            return clone;
+        });
     }
 
     return <Home
@@ -235,5 +245,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         onPageSelect={onPageSelect}
         pages={pages}
         selectedPage={selectedPage}
+        dirtyPages={dirtyPages}
+        onTogglePageDirty={onTogglePageDirty}
     >{children}</Home>
 }

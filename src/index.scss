@@ -36,6 +36,18 @@ body {
     height: 100%;
 }
 
+div.szh-menu-container {
+    font-weight: normal !important;
+}
+
+i.dirty-icon {
+    font-size: 8px;
+    position: absolute;
+    left: 4px;
+    top: 15px;
+    color: #b1b1b1;
+}
+
 * {
     scrollbar-width: thin;
     scrollbar-color: rgb(240, 240, 240) rgb(205, 205, 205);

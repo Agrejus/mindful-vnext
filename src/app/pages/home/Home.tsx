@@ -15,6 +15,7 @@ import { ISection } from '../../data-access/entities/Section';
 import { CSharpToTypescript } from '../../shared-components/tools/c-sharp-to-typescript/CSharpToTypescript';
 import { JsonPrettyPrint } from '../../shared-components/tools/json-pretty-print/JsonPrettyPrint';
 import { DataSource } from '../../../utilities/DataSource';
+import { DirtyPages } from './PageContainer';
 
 interface IHomeProps {
     sections: ISection[]
@@ -32,12 +33,16 @@ interface IHomeProps {
     onPageDelete: (page: IPage) => Promise<void>;
     onPageSelect: (id: string) => Promise<void>;
     onContentChange: (content: any) => void;
+
+    onTogglePageDirty: (id: string, isDirty: boolean) => void;
+    dirtyPages: DirtyPages;
 }
 
 export const Home: React.FunctionComponent<IHomeProps> = (props) => {
 
     const { sections, selectedSection, onSectionChange, onSectionChanges, onSectionCreate, onSectionDelete, onSectionSelect,
-    pages, selectedPage, onContentChange, onPageChange, onPageCreate, onPageDelete, onPageSelect } = props;
+        pages, selectedPage, onContentChange, onPageChange, onPageCreate, onPageDelete, onPageSelect,
+        onTogglePageDirty, dirtyPages } = props;
     const [activeTool, setActiveTool] = useState<ToolType | null>(null);
     const [searchText, setSearchText] = useState<string>("");
     const [showArchivedSections, setShowArchivedSections] = useState<boolean>(false);
@@ -87,6 +92,7 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
                         onDelete={onPageDelete}
                         onSelect={onPageSelect}
                         pages={pages}
+                        dirtyPages={dirtyPages}
                     />}
                 </Pane>
                 <Pane>

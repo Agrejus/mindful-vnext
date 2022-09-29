@@ -4,13 +4,11 @@ import { editors } from '../../../../shared-components/editors';
 import { CreatableNavButton } from '../../../../shared-components/buttons/CreatableNavButton';
 import { DataSource } from '../../../../../utilities/DataSource';
 import SortableTree, { TreeItem, getFlatDataFromTree } from 'react-sortable-tree';
-// import { getTheme } from '../../../../shared-components/themes';
 import { theme } from '../../../../shared-components/themes';
-// import { theme } from '../../../../shared-components/themes/v2';
 import { PageSortable, PageSortableMenuAction } from '../../../../shared-components/themes/react-sortable-theme/sortables/PageSortable';
 import { DeletePageModal } from './sub-components/DeletePageModal';
 import { RenameModal } from '../../../../shared-components/modal/RenameModal';
-import { sort } from 'radash';
+import { DirtyPages } from '../../PageContainer';
 
 interface IPagesProps {
     onCreate: (name: string, type: PageType) => Promise<void>;
@@ -18,11 +16,13 @@ interface IPagesProps {
     onChange: (dataSource: DataSource<IPage>) => Promise<void>;
     onDelete: (page: IPage) => Promise<void>;
     pages: DataSource<IPage>;
+
+    dirtyPages: DirtyPages;
 }
 
 export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
-    const { onCreate, onSelect, onChange, onDelete, pages } = props;
+    const { onCreate, onSelect, onChange, onDelete, pages, dirtyPages } = props;
     const [deletePage, setDeletePage] = useState<IPage | null>(null);
     const [isMenuVisible, setIsMenuVisible] = useState<boolean>(false);
     const [newPageType, setNewPageType] = useState<PageType | null>(null);
@@ -51,7 +51,6 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
 
     }
-
     const onRenameClick = (page: IPage) => {
         // do this in a modal
         setRenamePage(page);
@@ -105,16 +104,22 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         onChange(DataSource.fromArray("_id", [...result, ...missing]));
     }
 
+    const renderPage = (page: IPage) => {
+        const p = { ...page }
+        return <PageSortable
+            onClick={() => onSelect(p._id)}
+            node={p}
+            onMenuClick={action => onMenuClick(action, p)}
+            isDirty={dirtyPages[p._id]}
+        />
+    }
+
     const getTree = () => {
         const roots = pages.all();
 
         // get parents
         const parents = roots.filter(w => w.path.length === 1).map(w => ({
-            ...w, title: (() => <PageSortable
-                onClick={() => onSelect(w._id)}
-                node={w}
-                onMenuClick={action => onMenuClick(action, w)}
-            />) as any
+            ...w, title: renderPage(w)
         } as TreeItem<IPage>));
 
         for (let i = 0; i < parents.length; i++) {
@@ -140,11 +145,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
                     const r = pages.get(id);
                     return {
-                        ...r, title: (() => <PageSortable
-                            onClick={() => onSelect(r._id)}
-                            node={r}
-                            onMenuClick={action => onMenuClick(action, r)}
-                        />) as any
+                        ...r, title: renderPage(r)
                     }
                 }) as any;
 

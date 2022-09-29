@@ -30,6 +30,9 @@ export interface IEditor {
     icon: string;
     type: PageType;
     displayName: string;
+
+    // migration - canMigrate, migrate
+    // render tile?
 }
 
 export const editors: IEditor[] = [

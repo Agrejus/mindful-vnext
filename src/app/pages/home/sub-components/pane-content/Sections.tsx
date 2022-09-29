@@ -33,7 +33,6 @@ export const Sections: React.FunctionComponent<ISectionsProps> = (props) => {
     }
 
     const onSectionDragOver = (event: SortableOnDragOverEvent) => {
-        console.log('onSectionDragOver')
         const sections = event.newState as ISection[];
 
         for (let i = 0; i < sections.length; i++) {

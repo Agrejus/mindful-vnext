@@ -15,11 +15,12 @@ interface PageSortableProps {
     node: IPage;
     onMenuClick: (action: PageSortableMenuAction) => void;
     onClick: () => void;
+    isDirty?: boolean;
 }
 
 export const PageSortable: React.FC<PageSortableProps> = (props) => {
 
-    const { node, onMenuClick, onClick } = props;
+    const { node, onMenuClick, onClick, isDirty } = props;
     const [menuProps, toggleMenu] = useMenuState();
     const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
 
@@ -38,6 +39,7 @@ export const PageSortable: React.FC<PageSortableProps> = (props) => {
         idField={'_id'}
         onClick={onClick}
         dataItem={node}
+        isDirty={isDirty}
         onContextMenu={onContextMenu}>
         <ControlledMenu {...menuProps} anchorPoint={anchorPoint} onClose={() => toggleMenu(false)}>
             <MenuItem onClick={() => onMenuClick(PageSortableMenuAction.Rename)}><i className='fas fa-i-cursor'></i>&nbsp;Rename</MenuItem>
