@@ -8,6 +8,11 @@ import SortableList from "react-easy-sort";
 import { arrayMoveImmutable } from "array-move";
 import { SortableTab } from './sub-components/SortableTab';
 import { RenameModal } from '../../modal/RenameModal';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export interface INote {
     isSelected: boolean;
@@ -115,7 +120,7 @@ const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
     const selected = selectedIndex != -1 ? notes[selectedIndex] : null;
 
     return <div className="notepad-editor">
-        <div className="editor-toolbar">
+        {/* <div className="editor-toolbar">
             <div className="editor-toolbar-row">
                 <div className="editor-toolbar-button-group">
                     <button onClick={addNote}>
@@ -123,7 +128,25 @@ const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
                     </button>
                 </div>
             </div>
-        </div>
+        </div> */}
+        <Accordion>
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1a-content"
+                id="panel1a-header"
+            >
+                <button onClick={addNote}>
+                    <i className="fas fa-plus"></i>
+                </button>
+            </AccordionSummary>
+            <AccordionDetails>
+                <Typography>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
+                    malesuada lacus ex, sit amet blandit leo lobortis eget.
+                </Typography>
+            </AccordionDetails>
+        </Accordion>
+
         {notes.length > 0 && <SortableList
             onSortEnd={onSortEnd}
             className="sortable-list"

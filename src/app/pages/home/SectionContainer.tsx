@@ -30,6 +30,7 @@ export const SectionContainer: React.FC<ISectionContainerProps> = (props) => {
     const { children } = props;
     const [sections, setSections] = useState<ISection[]>([]);
     const [selectedSection, setSelectedSection] = useState<ISection | undefined>(undefined);
+    const [isSyncInitializing, setIsSyncInitializing] = useState<boolean>(true);
 
     const dbContextFactory = useMindfulDataContext();
 
@@ -59,7 +60,47 @@ export const SectionContainer: React.FC<ISectionContainerProps> = (props) => {
 
         setup();
 
+    }, []);
+
+    useEffect(() => {
+        let sync: { cancel: () => void; } | null = null;
+        const setup = async () => {
+            const context = dbContextFactory();
+            sync = await context.sync({
+                change: e => {
+                    console.log('change', e)
+                },
+                active: () => {
+                    console.log('active')
+                },
+                complete: e => {
+                    console.log('complete', e)
+                },
+                denied: () => {
+                    console.log('denied')
+                },
+                error: e => {
+                    console.log('error', e)
+                },
+                paused: e => {
+                    console.log('paused', e);
+                }
+            });
+
+            setIsSyncInitializing(false);
+        }
+
+        setup();
+
+        
+        
+        return () => {
+            if (sync != null) {
+                sync.cancel();
+            }
+        }
     }, [])
+
 
     
     const onSectionChanges = async (changes: ISection[]) => {
@@ -161,6 +202,10 @@ export const SectionContainer: React.FC<ISectionContainerProps> = (props) => {
             const section: ISection = { ...clonedSections[index] };
             setSelectedSection(section);
         }
+    }
+
+    if (isSyncInitializing === true) {
+        return <>"loading"</>
     }
 
     return <PageContainer

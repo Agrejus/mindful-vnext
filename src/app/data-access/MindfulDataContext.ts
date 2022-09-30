@@ -5,6 +5,7 @@ import { INotification } from "./entities/Notification"
 import { IPage } from "./entities/Page";
 import { ISection } from "./entities/Section";
 import PouchDB from 'pouchdb';
+import pako from "pako";
 
 export enum MindfulDocumentTypes {
     Notifications = "Notifications",
@@ -23,7 +24,7 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
         return result;
     }
 
-    initializeSync(callbacks?: {
+    sync(callbacks?: {
         change?: (info: PouchDB.Replication.SyncResult<{}>) => void,
         paused?: (err: any) => void,
         active?: () => void,
@@ -31,19 +32,48 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
         complete?: (info: PouchDB.Replication.SyncResultComplete<{}>) => void,
         error?: (error: any) => void,
     }) {
-        const remoteDb = new PouchDB('http://localhost:5984/mindful-db-1', {
+        let delay = 0;
+        const remoteDb = new PouchDB('http://localhost:3000/mindful-db-1', {
             skip_setup: true,
-            auth: {
-                password: 'admin',
-                username: 'admin'
+            fetch: (url, options) => {
+                if (options?.method === "POST" || options?.method === "PUT") {
+
+                    if (options?.headers && options?.body) {
+        
+                        const zippedBody = pako.gzip(options.body as any);
+                        const request = new Request(url, { ...options, body: zippedBody }) as Request;
+        
+                        request.headers.append('Content-Encoding', 'gzip');
+        
+                        return fetch(request)
+                    }
+                }
+
+                return fetch(new Request(url, options));
             }
         });
 
         return this.doWork(async w => {
             const sync = w.sync(remoteDb, {
                 live: true,
-                retry: true
+                retry: true,
+                checkpoint: "source",
+                 back_off_function: () => {
+                    if (delay === 0) {
+                        delay = 1000;
+                        return 1000; // start with 1 second
+                    }
+
+                    if (delay < 10000) {
+                        delay = delay * 1.2;
+                        return delay; // increase a little bit at a time
+                    }
+
+                    delay = 10000;
+                    return delay; // don't go over 10 seconds
+                 }
             }).on('change', (info) => {
+                delay = 0;
                 // handle change
                 if (callbacks?.change) {
                     callbacks.change(info)
@@ -55,32 +85,29 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
                 }
             }).on('active', function () {
                 // replicate resumed (e.g. new changes replicating, user went back online)
-                console.log('sync active');
                 if (callbacks?.active) {
                     callbacks.active()
                 }
             }).on('denied', function (err) {
                 // a document failed to replicate (e.g. due to permissions)
-                console.log('sync denied', err);
                 if (callbacks?.denied) {
                     callbacks.denied(err)
                 }
             }).on('complete', function (info) {
+                delay = 0;
                 // handle complete
-                console.log('sync complete', info);
                 if (callbacks?.complete) {
                     callbacks.complete(info)
                 }
             }).on('error', function (err) {
                 // handle error
-                console.log('sync error', err);
                 if (callbacks?.error) {
                     callbacks.error(err)
                 }
-            });
+            })
 
             return {
-                cancel: sync.cancel,
+                cancel: sync.cancel
             }
         });
     }
