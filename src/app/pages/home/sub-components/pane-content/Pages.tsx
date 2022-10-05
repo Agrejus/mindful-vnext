@@ -104,7 +104,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
 
             const page = 'node' in item ? item.node : item;
 
-            const children = [...page.children.map(w => ({...w}))];
+            const children = [...page.children];
 
             // walk down child path and transform them
             // can we use path object instead?
@@ -113,10 +113,11 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                 const child = children[j];
 
                 if (child.children.length > 0) {
-                    children.push(...child.children.map(w => ({...w})))
+                    children.push(...child.children)
                 }
 
-                children[j] = {  children: child.children.map((x: any) => ({ id: getId(x), children: x.children } as IPageChild)) as any, id: getId(child)}
+                children[j].children = child.children.map((x: any) => ({ id: getId(x), children: x.children } as IPageChild)) as any;
+                children[j].id = getId(child);
             }
 
             result[page._id].children = page.children.map((x: any) => ({ id: getId(x), children: x.children } as IPageChild)) as any;
@@ -136,7 +137,6 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
             result[item._id] = item;
         }
 
-        debugger;
         mapNodes(nodes, result);
         mapNodes(missing, result);
 

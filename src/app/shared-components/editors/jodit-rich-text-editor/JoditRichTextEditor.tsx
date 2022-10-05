@@ -10,9 +10,13 @@ export const queueContentChange = debounce({ delay: 600 }, throttle({ interval: 
     onChange(content);
 }))
 
-const JoditRichTextEditor: React.FunctionComponent<{ content: any, onChange: (content: string) => void }> = (props) => {
+export interface IJoditRichTextEditorProps extends EditorProps {
+    showToolbar: boolean
+}
 
-    const { onChange } = props;
+const JoditRichTextEditor: React.FunctionComponent<IJoditRichTextEditorProps> = (props) => {
+
+    const { onChange, showToolbar } = props;
     const editor = useRef<JoditEditor>(null)
     const [content, setContent] = useState(props.content);
 
@@ -20,7 +24,13 @@ const JoditRichTextEditor: React.FunctionComponent<{ content: any, onChange: (co
         readonly: false, // all options from https://xdsoft.net/jodit/doc/,
         placeholder: 'Start typings...',
         height: '100%',
-        resize: false
+        minHeight: "100%",
+        showCharsCounter: false,
+        showWordsCounter: false,
+        showXPathInStatusbar: false,
+        toolbar: showToolbar,
+        allowResizeY: false,
+        allowResizeX: false,
     }), [])
 
     return (
@@ -37,16 +47,14 @@ const JoditRichTextEditor: React.FunctionComponent<{ content: any, onChange: (co
     );
 }
 
-// const Memo = React.memo(JoditRichTextEditor);
-
-const JoditRichTextEditorWrapper: React.FC<EditorProps> = (props) => {
+export const JoditRichTextEditorWrapper: React.FC<IJoditRichTextEditorProps> = (props) => {
 
 
     const onChange = (newContent: string) => {
         queueContentChange(newContent, props.onChange)
     }
 
-    return <JoditRichTextEditor content={props.content} onChange={onChange}/>
+    return <JoditRichTextEditor content={props.content} onChange={onChange} showToolbar={props.showToolbar} />
 }
 
 
@@ -54,7 +62,7 @@ export class JoditRichTextEditorContainer implements IEditor {
 
     stringifySearchContent = (content: any) => content;
 
-    render = (props: EditorProps) => <JoditRichTextEditorWrapper {...props} />;
+    render = (props: EditorProps) => <JoditRichTextEditorWrapper {...props} showToolbar={true} />;
 
     getDefaultContent = () => "";
 

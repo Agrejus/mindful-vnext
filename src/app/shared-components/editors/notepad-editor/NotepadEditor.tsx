@@ -1,6 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import './NotepadEditor.scss';
-import { convertFromRaw, convertToRaw, Editor, EditorState, Modifier, RichUtils } from 'draft-js';
 import { ButtonType, Modal } from '../../modal/Modal';
 import { EditorProps, IEditor } from '..';
 import { IPage, PageType } from '../../../data-access/entities/Page';
@@ -8,77 +7,65 @@ import SortableList from "react-easy-sort";
 import { arrayMoveImmutable } from "array-move";
 import { SortableTab } from './sub-components/SortableTab';
 import { RenameModal } from '../../modal/RenameModal';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Typography from '@mui/material/Typography';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { EditorHeader } from '../../header/EditorHeader';
+import { JoditRichTextEditorWrapper } from '../jodit-rich-text-editor/JoditRichTextEditor';
+import { sort } from 'radash';
 
 export interface INote {
     isSelected: boolean;
     order: number;
-    content: any;
+    content: string;
     title: string;
     id: number;
 }
 
+type Notes = { [key: number]: INote };
+
 const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
 
-    const { content, onChange } = props;
-    const notes = content as INote[];
+    const { content } = props;
+    const notes = content as Notes;
     const [deleteNote, setDeleteNote] = useState<INote | null>(null);
     const [renameNote, setRenameNote] = useState<INote | null>(null);
-    const editors = useRef<{ [key: string]: Editor | null }>({});
+
+    const onChange = (notes: Notes) => {
+        props.onChange(notes);
+    }
 
     const onSelect = (id: number) => {
-        const alteredNotes = notes.map(w => ({ ...w, isSelected: w.id === id }));
-        onChange(alteredNotes);
-    }
 
-    const onTab = (e: React.KeyboardEvent<{}>, index: number) => {
-        e.preventDefault();
-
-        if (e.shiftKey) {
-            // figure out how to get this to work
-            const currentState = notes[index].content;
-            handleContentChange(RichUtils.onTab(e, currentState, 4), index);
-        } else {
-            const currentState = notes[index].content;
-            const newContentState = Modifier.replaceText(
-                currentState.getCurrentContent(),
-                currentState.getSelection(),
-                "    "
-            );
-
-            const newState = EditorState.push(currentState, newContentState, 'insert-characters');
-            handleContentChange(newState, index);
+        for(let key in notes) {
+            notes[key].isSelected = notes[key].id === id;
         }
+        onChange(notes);
     }
 
-    const handleContentChange = (e: EditorState, index: number) => {
-        notes[index].content = e;
+    const handleContentChange = (content: string, id: number) => {
+        notes[id].content = content;
         onChange(notes);
     }
 
     const onTitleChange = (title: string, id: number) => {
-        const index = notes.findIndex(w => w.id === id)
-        notes[index].title = title;
+        notes[id].title = title;
         onChange(notes);
     }
 
     const addNote = () => {
-        const alteredNotes = notes.map((w, i) => {
-            return { ...w, isSelected: false }
-        });
-        alteredNotes.push({
-            content: EditorState.createEmpty(),
+
+        for(let key in notes) {
+            notes[key].isSelected = false;
+        }
+
+        const id = Object.keys(notes).length + 1;
+        notes[id] = {
+            content: "",
             isSelected: true,
             order: 1,
-            title: `new ${alteredNotes.length + 1}`,
-            id: notes.length + 1
-        });
-        onChange(alteredNotes);
+            title: `new ${id}`,
+            id: id
+        }
+
+        onChange(notes);
     }
 
     const handleDeleteNote = (button: ButtonType) => {
@@ -87,14 +74,8 @@ const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
             setDeleteNote(null)
             return;
         }
-        const index = notes.findIndex(w => w.id === deleteNote!.id);
 
-        if (index === -1) {
-            setDeleteNote(null)
-            return;
-        }
-
-        notes.splice(index, 1);
+        delete notes[deleteNote.id];
 
         onChange(notes);
 
@@ -102,34 +83,16 @@ const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
     }
 
     const onSortEnd = (oldIndex: number, newIndex: number) => {
-        const sortedNotes = arrayMoveImmutable(notes, oldIndex, newIndex)
+        const notesArray = sort(Object.values(notes), w => w.order, false)
+        const sortedNotes = arrayMoveImmutable(notesArray, oldIndex, newIndex).reduce((a, v, i) => ({ ...a, [v.id]: {...v, order: i} }), {} as Notes)
         onChange(sortedNotes);
     };
 
-    const focusEditor = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, index: number) => {
-
-        if (e.target instanceof HTMLImageElement) {
-
-        }
-
-        if (editors.current[index]) {
-            editors.current[index]!.focus();
-        }
-    }
-
-    const selectedIndex = notes.findIndex(w => w.isSelected === true);
-    const selected = selectedIndex != -1 ? notes[selectedIndex] : null;
+    const notesArray = sort(Object.values(notes), w => w.order, false)
+    const selectedIndex = notesArray.findIndex(w => w.isSelected === true);
+    const selected = selectedIndex != -1 ? notesArray[selectedIndex] : null;
 
     return <div className="notepad-editor">
-        {/* <div className="editor-toolbar">
-            <div className="editor-toolbar-row">
-                <div className="editor-toolbar-button-group">
-                    <button onClick={addNote}>
-                        <i className="fas fa-plus"></i>
-                    </button>
-                </div>
-            </div>
-        </div> */}
         <EditorHeader
             quickAccessUI={() => <div>
                 <button onClick={addNote}>
@@ -137,12 +100,12 @@ const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
                 </button>
             </div>}
         />
-        {notes.length > 0 && <SortableList
+        {notesArray.length > 0 && <SortableList
             onSortEnd={onSortEnd}
             className="sortable-list"
             draggedItemClassName="sortable-item-dragging"
         >
-            {notes.map((w, i) => <SortableTab
+            {notesArray.map((w, i) => <SortableTab
                 note={w}
                 key={w.id}
                 onDelete={() => setDeleteNote(w)}
@@ -151,13 +114,12 @@ const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
                 onRenameClick={() => setRenameNote(w)}
             />)}
         </SortableList>}
-        <div className="rich-text-content" onClick={e => focusEditor(e, selectedIndex)}>
-            {selected != null && <Editor
-                placeholder="Your notes here..."
-                ref={e => { editors.current[selectedIndex] = e; }}
-                editorState={selected.content}
-                onChange={e => handleContentChange(e, selectedIndex)}
-                onTab={e => onTab(e, selectedIndex)}
+        <div className="rich-text-content">
+            {selected != null && <JoditRichTextEditorWrapper
+                key={selected.id}
+                content={selected.content}
+                onChange={e => handleContentChange(e, selected.id)}
+                showToolbar={false}
             />}
         </div>
         {deleteNote && <Modal<INote, any>
@@ -185,33 +147,9 @@ export class NotepadContainer implements IEditor {
 
     getDefaultContent = () => [];
 
-    parse = (page: IPage) => {
-        const notes = JSON.parse(page.content) as any[];
-        for (let note of notes) {
-            if (!note.content) {
-                note.content = EditorState.createEmpty();
-            } else {
-                try {
-                    note.content = EditorState.createWithContent(convertFromRaw(note.content))
-                } catch {
-                    note.content = EditorState.createEmpty();
-                }
-            }
-        }
-        return notes;
-    }
+    parse = (page: IPage) => JSON.parse(page.content);
 
-    stringify = (page: IPage) => {
-        const notes = page.content as any[];
-        const stringifiedContentNotes = notes.map(w => {
-            return {
-                ...w,
-                content: convertToRaw(w.content.getCurrentContent())
-            }
-        })
-
-        return JSON.stringify(stringifiedContentNotes);
-    }
+    stringify = (page: IPage) => JSON.stringify(page.content);
 
     type = PageType.Notepad;
     icon = "far fa-sticky-note";
