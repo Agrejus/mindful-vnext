@@ -7,6 +7,7 @@ import { NotepadContainer } from './notepad-editor/NotepadEditor';
 import { LinksContainer } from './links-editor/LinksEditor';
 import { RichTextEditorContainer } from './rich-text-editor/RichTextEditor';
 import { MarkdownContainer } from './markdown-editor/MarkdownEditor';
+import { JoditRichTextEditorContainer } from './jodit-rich-text-editor/JoditRichTextEditor';
 
 export type Action = () => void;
 
@@ -40,7 +41,7 @@ export const editors: IEditor[] = [
     new LinksContainer(),
     new MarkdownContainer(),
     new NotepadContainer(),
-    new RichTextEditorContainer(),
+    new JoditRichTextEditorContainer(),
     new TextEditorContainer(),
     // new VisualStudioEnvironmentEditor(),
     new KanbanEditorContainer(),

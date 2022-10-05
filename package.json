@@ -36,6 +36,7 @@
     "file-dialog": "0.0.8",
     "history": "^4.10.1",
     "is-electron": "^2.2.0",
+    "jodit-pro-react": "^1.3.31",
     "moment": "^2.29.1",
     "pako": "^2.0.4",
     "pouchdb": "^7.3.0",

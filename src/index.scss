@@ -168,35 +168,35 @@ div.card-header {
     margin-right: 3px;
 }
 
-.editor-toolbar {
-    padding: 5px;
-    margin: 0 10px;
-    border-bottom: 1px solid rgba(0, 0, 0, .15);
-    margin-bottom: 20px;
+// .editor-toolbar {
+//     padding: 5px;
+//     margin: 0 10px;
+//     border-bottom: 1px solid rgba(0, 0, 0, .15);
+//     margin-bottom: 20px;
 
-    .editor-toolbar-row {
+//     .editor-toolbar-row {
 
-        .editor-toolbar-button-group {
-            display: inline-block;
-            border-radius: 4px;
-            margin: 5px;
-            font-size: 16px;
-        }
+//         .editor-toolbar-button-group {
+//             display: inline-block;
+//             border-radius: 4px;
+//             margin: 5px;
+//             font-size: 16px;
+//         }
 
-        button {
-            outline: none;
-            background: transparent;
-            border: none;
-            padding: 5px 8px;
-            color: $blue;
+//         button {
+//             outline: none;
+//             background: transparent;
+//             border: none;
+//             padding: 5px 8px;
+//             color: $blue;
 
-            &:hover {
-                background-color: $hover;
-                border-radius: 4px;
-            }
-        }
-    }
-}
+//             &:hover {
+//                 background-color: $hover;
+//                 border-radius: 4px;
+//             }
+//         }
+//     }
+// }
 
 .rotate-active {
     -webkit-transform: rotate(360deg);

@@ -8,5 +8,5 @@ export const theme = {
     rowHeight: 36,
     scaffoldBlockPxWidth: 20,
     slideRegionSize: 100,
-    treeNodeRenderer: ReactSortableTreeNodeRenderer
+    treeNodeRenderer: ReactSortableTreeNodeRenderer,
 }

@@ -3,7 +3,7 @@ import { IPage, IPageChild, PageType } from '../../../../data-access/entities/Pa
 import { editors } from '../../../../shared-components/editors';
 import { CreatableNavButton } from '../../../../shared-components/buttons/CreatableNavButton';
 import { DataSource } from '../../../../../utilities/DataSource';
-import SortableTree, { TreeItem, getFlatDataFromTree } from 'react-sortable-tree';
+import SortableTree, { TreeItem, getFlatDataFromTree, FlatDataItem } from 'react-sortable-tree';
 import { theme } from '../../../../shared-components/themes';
 import { PageSortable, PageSortableMenuAction } from '../../../../shared-components/themes/react-sortable-theme/sortables/PageSortable';
 import { DeletePageModal } from './sub-components/DeletePageModal';
@@ -75,33 +75,72 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         setNewPageType(null);
     }
 
-    const onTreeChange = (data: TreeItem<IPage>[]) => {
+    const getId = (child: IPage | IPageChild) => {
 
-        const flat = getFlatDataFromTree({ treeData: data, getNodeKey: w => w.node._id });
-
-        const result = flat.map(w => {
-
-            const page = { ...w.node } as IPage;
-            page.children = (w.node.children as IPage[]).map(x => ({ id: x._id, children: x.children } as IPageChild));
-            page.path = w.path as string[];
-
-            return page;
-        });
-
-        // collapsing removes nodes from the data array, 
-        // need to add back anything missing
-        const dict = flat.reduce((a, v) => ({ ...a, [v.node._id]: v.node }), {} as { [key: string]: IPage })
-        const missing = pages.filter(w => dict[w._id] == null);
-
-        const source = [...result, ...missing];
-        const hasError = source.filter(w => w.children.some(x => x == null));
-
-        if (hasError.length > 0) {
-            debugger;
-            throw 'e'
+        if ('id' in child) {
+            return child.id
         }
 
-        onChange(DataSource.fromArray("_id", [...result, ...missing]));
+        return child._id
+    }
+
+    const prune = (child: IPage | IPageChild) => {
+        if ('id' in child) {
+            return;
+        }
+
+        for(let property of Object.keys(child)) {
+            if (property === "_id" || property === "children") {
+                continue;
+            }
+
+            delete (child as any)[property]
+        }
+    }
+
+    const mapNodes = (nodes: (FlatDataItem<IPage> | IPage)[], result: { [key: string]: IPage }) => {
+        for (let i = 0; i < nodes.length; i++) {
+            const item = nodes[i];
+
+            const page = 'node' in item ? item.node : item;
+
+            const children = [...page.children.map(w => ({...w}))];
+
+            // walk down child path and transform them
+            // can we use path object instead?
+            // we don't want to modify by reference
+            for (let j = 0; j < children.length; j++) {
+                const child = children[j];
+
+                if (child.children.length > 0) {
+                    children.push(...child.children.map(w => ({...w})))
+                }
+
+                children[j] = {  children: child.children.map((x: any) => ({ id: getId(x), children: x.children } as IPageChild)) as any, id: getId(child)}
+            }
+
+            result[page._id].children = page.children.map((x: any) => ({ id: getId(x), children: x.children } as IPageChild)) as any;
+            result[page._id].path = item.path as string[];
+        }
+    }
+
+    const onTreeChange = (data: TreeItem<IPage>[]) => {
+
+        const nodes = getFlatDataFromTree({ treeData: data, getNodeKey: w => w.node._id });
+        const result = nodes.reduce((a, v) => ({ ...a, [v.node._id]: v.node }), {} as { [key: string]: IPage });
+        const missing = pages.filter(w => result[w._id] == null);
+
+        // add missing into result
+        for (let i = 0; i < missing.length; i++) {
+            const item = missing[i];
+            result[item._id] = item;
+        }
+
+        debugger;
+        mapNodes(nodes, result);
+        mapNodes(missing, result);
+
+        onChange(DataSource.fromArray("_id", Object.values(result)));
     }
 
     const renderPage = (page: IPage) => {
@@ -118,9 +157,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
         const roots = pages.all();
 
         // get parents
-        const parents = roots.filter(w => w.path.length === 1).map(w => ({
-            ...w, title: renderPage(w)
-        } as TreeItem<IPage>));
+        const parents = roots.filter(w => w.path.length === 1).map(w => ({ ...w, title: renderPage(w) } as TreeItem<IPage>));
 
         for (let i = 0; i < parents.length; i++) {
             const parent = parents[i] as TreeItem<IPage>;

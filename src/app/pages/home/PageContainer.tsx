@@ -18,7 +18,7 @@ interface IPageContainerProps {
     onSectionSelect: (id: string) => Promise<void>;
 }
 
-export type DirtyPages = { [key:string]: true }
+export type DirtyPages = { [key: string]: true }
 
 export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
@@ -36,7 +36,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
                 const context = dbContextFactory();
                 const allPages = await context.pages.filter(w => w.sectionId === selectedSection._id);
 
-                setPages(DataSource.fromArray("_id", allPages));
+                setPages(DataSource.fromArray("_id", allPages.map(w => ({ ...w }))));
 
                 const page = allPages.find(w => w.isSelected === true);
 
@@ -114,7 +114,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         await context.saveChanges();
         const final = await context.pages.all()
 
-        setPages(DataSource.fromArray("_id", final))
+        setPages(DataSource.fromArray("_id", final.map(w => ({ ...w }))))
     }
 
     const onPageDelete = async (page: IPage) => {
@@ -133,7 +133,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         await context.saveChanges();
 
         const allPages = await context.pages.all();
-        const dataSource = DataSource.fromArray<IPage>("_id", [...allPages]);
+        const dataSource = DataSource.fromArray<IPage>("_id", [...allPages.map(w => ({ ...w }))]);
 
         setSelectedPage(undefined);
         setPages(dataSource);
@@ -167,7 +167,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         queuePageChange('onPageSelect', dbContextFactory, changes, () => { });
     }
 
-
+    // need to send in the page id so we can queue changes properly
     const onContentChange = async (content: any) => {
 
         if (selectedPage == null || selectedSection == null) {
@@ -215,7 +215,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
 
         if (isDirty === false) {
             setDirtyPages(w => {
-                const clone = {...w}
+                const clone = { ...w }
                 delete clone[id];
                 return clone;
             });
@@ -223,7 +223,7 @@ export const PageContainer: React.FC<IPageContainerProps> = (props) => {
         }
 
         setDirtyPages(w => {
-            const clone = {...w}
+            const clone = { ...w }
             clone[id] = true;
             return clone;
         });

@@ -13,6 +13,7 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { EditorHeader } from '../../header/EditorHeader';
 
 export interface INote {
     isSelected: boolean;
@@ -129,24 +130,13 @@ const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
                 </div>
             </div>
         </div> */}
-        <Accordion>
-            <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-            >
+        <EditorHeader
+            quickAccessUI={() => <div>
                 <button onClick={addNote}>
                     <i className="fas fa-plus"></i>
                 </button>
-            </AccordionSummary>
-            <AccordionDetails>
-                <Typography>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-                    malesuada lacus ex, sit amet blandit leo lobortis eget.
-                </Typography>
-            </AccordionDetails>
-        </Accordion>
-
+            </div>}
+        />
         {notes.length > 0 && <SortableList
             onSortEnd={onSortEnd}
             className="sortable-list"

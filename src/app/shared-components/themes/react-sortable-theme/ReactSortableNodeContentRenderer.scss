@@ -34,7 +34,11 @@
   .rst__rowLandingPad::before,
   .rst__rowCancelPad::before {
     background-color: lightblue;
-    border: 3px dashed white;
+    border: 2px solid white;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
     content: '';
     position: absolute;
     top: 0;

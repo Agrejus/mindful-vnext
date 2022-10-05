@@ -39,12 +39,12 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
                 if (options?.method === "POST" || options?.method === "PUT") {
 
                     if (options?.headers && options?.body) {
-        
+
                         const zippedBody = pako.gzip(options.body as any);
                         const request = new Request(url, { ...options, body: zippedBody }) as Request;
-        
+
                         request.headers.append('Content-Encoding', 'gzip');
-        
+
                         return fetch(request)
                     }
                 }
@@ -58,7 +58,7 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
                 live: true,
                 retry: true,
                 checkpoint: "source",
-                 back_off_function: () => {
+                back_off_function: () => {
                     if (delay === 0) {
                         delay = 1000;
                         return 1000; // start with 1 second
@@ -71,7 +71,7 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
 
                     delay = 10000;
                     return delay; // don't go over 10 seconds
-                 }
+                }
             }).on('change', (info) => {
                 delay = 0;
                 // handle change

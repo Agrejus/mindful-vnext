@@ -1,0 +1,41 @@
+@import "../../../colors.scss";
+
+div.MuiPaper-root {
+
+    max-height: 48px !important;
+    min-height: 48px !important;
+    margin-bottom: 10px !important;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 4px 2px -2px;
+
+    div.MuiCollapse-root {
+        position: absolute;
+        z-index: 9999999;
+        background: white;
+        left: 0;
+        right: 0;
+        //box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 10px, rgba(0, 0, 0, 0.16) 0px 2px 5px;
+        box-shadow: rgba(0, 0, 0, 0.12) 0px 4px 2px -2px;
+    }
+
+    div.MuiButtonBase-root {
+        max-height: 48px !important;
+        min-height: 48px !important;
+    }
+
+    .MuiAccordionSummary-content {
+        margin: 0;
+    }
+
+    button {
+        outline: none;
+        background: transparent;
+        border: none;
+        padding: 5px 8px;
+        color: $blue;
+
+        &:hover {
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+            border-radius: 4px;
+        }
+    }
+}
