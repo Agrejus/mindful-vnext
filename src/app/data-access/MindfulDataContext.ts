@@ -36,20 +36,23 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
         const remoteDb = new PouchDB('http://localhost:3000/mindful-db-1', {
             skip_setup: true,
             fetch: (url, options) => {
-                if (options?.method === "POST" || options?.method === "PUT") {
+                // if (options?.method === "POST" || options?.method === "PUT") {
 
-                    if (options?.headers && options?.body) {
+                //     if (options?.headers && options?.body) {
 
-                        const zippedBody = pako.gzip(options.body as any);
-                        const request = new Request(url, { ...options, body: zippedBody }) as Request;
+                //         const zippedBody = pako.gzip(options.body as any);
+                //         const request = new Request(url, { ...options, body: zippedBody }) as Request;
 
-                        request.headers.append('Content-Encoding', 'gzip');
+                //         request.headers.append('Content-Encoding', 'gzip');
 
-                        return fetch(request)
-                    }
-                }
+                //         return fetch(request)
+                //     }
+                // }
 
-                return fetch(new Request(url, options));
+                const request = new Request(url, options) as Request;
+                request.headers.append('Authorization', `Basic ${Buffer.from("admin:admin").toString('base64')}`);
+
+                return fetch(request);
             }
         });
 
