@@ -5,13 +5,14 @@ export interface IContentToolbarHorizontalButtonProps {
     icon: React.ReactNode;
     label: string;
     onClick: () => void;
+    disabled?: boolean;
 }
 
 export const ContentToolbarHorizontalButton: React.FC<IContentToolbarHorizontalButtonProps> = (props) => {
 
-    const { icon, label, onClick } = props;
+    const { icon, label, onClick, disabled } = props;
 
-    return <Button variant="contained" className="mui-horizontal-button" onClick={onClick}>
+    return <Button variant="contained" disabled={disabled} className="mui-horizontal-button" onClick={onClick}>
         <div className='mui-horizontal-button-icon-container'>
             {icon}
         </div>

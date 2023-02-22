@@ -387,6 +387,10 @@ button.mui-tall-button {
     display: inline-block;
 }
 
+button.mui-horizontal-button[disabled], button.mui-tall-button[disabled] {
+    background-color: transparent;
+}
+
 button.mui-tall-button, 
 button.mui-horizontal-button {
     text-transform: none;

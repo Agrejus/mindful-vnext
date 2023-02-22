@@ -249,6 +249,8 @@ const KanbanEditorHeader: React.FC<EditorProps> = (props) => {
                 <ContentToolbarHorizontalButton icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-layout-sidebar-inset'></i><i className='bi bi-plus-circle-fill text-success bi-stacked-icon-action-circle'></i></div>} label='Add Column' onClick={() => void (0)} />
             </ContentToolbarButtonGroup>
             <ContentToolbarButtonGroup>
+                <ContentToolbarHorizontalButton disabled icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-card-text'></i><i className='bi bi-x-circle-fill text-danger bi-stacked-icon-action-circle'></i></div>} label='Remove Card' onClick={() => void (0)} />
+                <ContentToolbarHorizontalButton disabled icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-layout-sidebar-inset'></i><i className='bi bi-x-circle-fill text-danger bi-stacked-icon-action-circle'></i></div>} label='Remove Column' onClick={() => void (0)} />
                 <ContentToolbarHorizontalButton icon={<i className='bi bi-archive'></i>} label='Show Archived Cards' onClick={() => void (0)} />
             </ContentToolbarButtonGroup>
             <ContentToolbarLabel name='Kanban Actions' />
