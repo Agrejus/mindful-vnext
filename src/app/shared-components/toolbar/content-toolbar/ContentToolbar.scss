@@ -22,7 +22,13 @@
         width: 1px;
         margin: 0px 3px;
         height: 135px;
-        background-color: #cfcfcf;
+        background-color: rgb(235, 235, 235);
         vertical-align: top;
+    }
+}
+
+div.mui-tall-button-dropdown-pop-over {
+    div.MuiPaper-root {
+        display: table;
     }
 }
