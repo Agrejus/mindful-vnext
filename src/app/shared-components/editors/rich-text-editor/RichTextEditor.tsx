@@ -367,7 +367,7 @@ export class RichTextEditorContainer implements IEditor {
     stringifySearchContent = (content: EditorState) => content.getCurrentContent().getPlainText();
 
     render = (props: EditorProps) => <RichTextEditor {...props} />;
-
+    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => EditorState.createEmpty();
 
     parse = (page: IPage) => {

@@ -2,6 +2,11 @@ import './TextEditor.scss';
 import React from 'react';
 import { EditorProps, IEditor } from '..';
 import { IPage, PageType } from '../../../data-access/entities/Page';
+import { Button } from '@mui/material';
+import { ContentToolbarButtonGroup } from '../../toolbar/content-toolbar-button-group/ContentToolbarButtonGroup';
+import { ContentToolbarTallButton } from '../../toolbar/content-toolbar-buttons/ContentToolbarTallButton';
+import { ContentToolbarGroup } from '../../toolbar/content-toolbar-group/ContentToolbarGroup';
+import { ContentToolbarLabel } from '../../toolbar/content-toolbar-label/ContentToolbarLabel';
 
 interface State {
 
@@ -16,9 +21,22 @@ class TextEditor extends React.PureComponent<EditorProps, State> {
     }
 }
 
+const TextEditorHeader: React.FC<EditorProps> = (props) => {
+
+    return <>
+        <ContentToolbarGroup>
+            <ContentToolbarButtonGroup>
+                <ContentToolbarTallButton icon={<i className='bi bi-x-lg text-delete'></i>} label='Delete Page' onClick={() => void (0)} />
+            </ContentToolbarButtonGroup>
+            <ContentToolbarLabel name='Text Editor Actions' />
+        </ContentToolbarGroup>
+    </>
+}
+
 export class TextEditorContainer implements IEditor {
     stringifySearchContent = (content: string) => content;
     render = (props: EditorProps) => <TextEditor {...props} />;
+    renderToolbar = (props: EditorProps) => <TextEditorHeader {...props} />;
 
     getDefaultContent = () => "";
 

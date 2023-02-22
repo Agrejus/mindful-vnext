@@ -144,7 +144,7 @@ export class NotepadContainer implements IEditor {
     stringifySearchContent = (content: any) => "";
 
     render = (props: EditorProps) => <NotepadEditor {...props} />;
-
+    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => [];
 
     parse = (page: IPage) => JSON.parse(page.content);

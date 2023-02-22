@@ -24,6 +24,11 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
         return result;
     }
 
+    async saveChanges() {
+        console.log('saveChanges');
+        return super.saveChanges();
+    }
+
     sync(callbacks?: {
         change?: (info: PouchDB.Replication.SyncResult<{}>) => void,
         paused?: (err: any) => void,
@@ -33,49 +38,61 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
         error?: (error: any) => void,
     }) {
         let delay = 0;
-        const remoteDb = new PouchDB('http://localhost:3000/mindful-db-1', {
+        const remoteDb = new PouchDB('https://wandering-resonance-42623.pktriot.net/mindful-v1', {
             skip_setup: true,
-            fetch: (url, options) => {
-                // if (options?.method === "POST" || options?.method === "PUT") {
-
-                //     if (options?.headers && options?.body) {
-
-                //         const zippedBody = pako.gzip(options.body as any);
-                //         const request = new Request(url, { ...options, body: zippedBody }) as Request;
-
-                //         request.headers.append('Content-Encoding', 'gzip');
-
-                //         return fetch(request)
-                //     }
-                // }
-
-                const request = new Request(url, options) as Request;
-                request.headers.append('Authorization', `Basic ${Buffer.from("admin:admin").toString('base64')}`);
-
-                return fetch(request);
+            auth: {
+                username: "admin",
+                password: "9EUXfpyEiMFUhQtAGVkyi0thh4QTmG"
             }
+            // fetch: (url, options) => {
+            //     // if (options?.method === "POST" || options?.method === "PUT") {
+
+            //     //     if (options?.headers && options?.body) {
+
+            //     //         const zippedBody = pako.gzip(options.body as any);
+            //     //         const request = new Request(url, { ...options, body: zippedBody }) as Request;
+
+            //     //         request.headers.append('Content-Encoding', 'gzip');
+
+            //     //         return fetch(request)
+            //     //     }
+            //     // }
+
+            //     const request = new Request(url, options) as Request;
+            //     request.headers.append('Authorization', `Basic ${Buffer.from("admin:admin").toString('base64')}`);
+
+            //     return fetch(request);
+            // }
         });
 
-        return this.doWork(async w => {
-            const sync = w.sync(remoteDb, {
-                live: true,
-                retry: true,
-                checkpoint: "source",
-                back_off_function: () => {
-                    if (delay === 0) {
-                        delay = 1000;
-                        return 1000; // start with 1 second
-                    }
-
-                    if (delay < 10000) {
-                        delay = delay * 1.2;
-                        return delay; // increase a little bit at a time
-                    }
-
-                    delay = 10000;
-                    return delay; // don't go over 10 seconds
+        const options: PouchDB.Replication.ReplicateOptions & {
+            style: "main_only"
+        } = {
+            style: "main_only",
+            live: true,
+            retry: true,
+            checkpoint: "source",
+            batch_size: 100,
+            batches_limit: 10,
+            timeout: 30000,
+            back_off_function: () => {
+                if (delay === 0) {
+                    delay = 1000;
+                    return 1000; // start with 1 second
                 }
-            }).on('change', (info) => {
+
+                if (delay < 10000) {
+                    delay = delay * 1.2;
+                    return delay; // increase a little bit at a time
+                }
+
+                delay = 10000;
+                return delay; // don't go over 10 seconds
+            }
+        }
+
+        return this.doWork(async w => {
+            const sync = w.sync(remoteDb, options).on('change', (info) => {
                 delay = 0;
                 // handle change
                 if (callbacks?.change) {
@@ -116,12 +133,31 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
     }
 
     protected createDb() {
-        const db = window.api.db();
-        return db;
+        if (window.NodePouchDB && this._dbOptions?.adapter !== "worker") {
+            const dbPath = (window as any).dbPath;
+            const opts = Object.assign(
+                {},
+                {
+                    revs_limit: 10,
+                },
+                this._dbOptions
+            );
+            return new window.NodePouchDB(dbPath, opts);
+        }
+
+        const dbName = this._dbOptions?.name ?? "mindful-v1";
+        const opts = Object.assign(
+            {},
+            {
+                revs_limit: 10,
+            },
+            this._dbOptions
+        );
+        return new PouchDB(dbName, opts);
     }
 
     notifications = this.dbset<INotification>(MindfulDocumentTypes.Notifications).keys(w => w.auto()).create();
-    pages = this.dbset<IPage>(MindfulDocumentTypes.Pages).map({ property: "content", map: { deserialize: (v, e) => parse(e), serialize: (v, e) => stringify(e) } }).keys(w => w.auto()).create();
+    pages = this.dbset<IPage>(MindfulDocumentTypes.Pages).keys(w => w.auto()).create();
     sections = this.dbset<ISection>(MindfulDocumentTypes.Sections).keys(w => w.auto()).create();
 }
 

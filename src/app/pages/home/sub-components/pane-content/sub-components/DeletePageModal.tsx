@@ -14,7 +14,7 @@ export const DeletePageModal: React.FunctionComponent<Props> = (props) => {
     const [value, setValue] = useState<string>('');
     const [checked, setChecked] = useState<boolean>(false);
     const hasChildren = all.some(w => page.path.slice(1, page.path.length).includes(w._id))
-
+    
     return <div className="modal" tabIndex={-1}>
         <div className="modal-dialog add-widget-modal">
             <div className="modal-content">

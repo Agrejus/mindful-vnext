@@ -1,0 +1,28 @@
+.page-content-toolbar-pane {
+    padding: 8px;
+
+    .page-content-toolbar-group {
+        display: inline-block;
+        vertical-align: top;
+
+        .page-content-toolbar-button-group {
+            min-height: 120px;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .page-content-toolbar-group-label {
+            text-align: center;
+            font-size: 12px;
+        }
+    }
+
+    .content-toolbar-divider {
+        display: inline-block;
+        width: 1px;
+        margin: 0px 3px;
+        height: 135px;
+        background-color: #cfcfcf;
+        vertical-align: top;
+    }
+}

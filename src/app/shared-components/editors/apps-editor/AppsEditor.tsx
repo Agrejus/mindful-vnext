@@ -190,7 +190,7 @@ class RenameModal extends React.PureComponent<RenameModalProps, RenameModalState
 export class AppsEditorContainer implements IEditor {
     stringifySearchContent = (content: any) => "";
     render = (props: EditorProps) => <Editor {...props} />;
-
+    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => { return { apps: [] } as IContainer; };
 
     parse = (page: IPage) => {

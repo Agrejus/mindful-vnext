@@ -21,8 +21,8 @@ const register = () => {
 
          
         },
-        db: () => {
-            return new NodePouchDB('mindful-db-1')
+        db: (options) => {
+            return new NodePouchDB(options)
         }
     };
 }

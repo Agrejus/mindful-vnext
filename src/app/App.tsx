@@ -8,7 +8,6 @@ import { MindfulDataContextProvider } from './providers/MindfulDataContextProvid
 export const App: React.FunctionComponent = () => {
 
     return <MindfulDataContextProvider>
-        <Header />
         <Router>
             <Switch>
                 <Route exact path="/" component={SectionContainer} />

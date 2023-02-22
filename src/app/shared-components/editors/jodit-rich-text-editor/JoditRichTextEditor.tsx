@@ -63,7 +63,7 @@ export class JoditRichTextEditorContainer implements IEditor {
     stringifySearchContent = (content: any) => content;
 
     render = (props: EditorProps) => <JoditRichTextEditorWrapper {...props} showToolbar={true} />;
-
+    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => "";
 
     parse = (page: IPage) => page.content;

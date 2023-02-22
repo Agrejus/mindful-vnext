@@ -5,6 +5,11 @@ import { MultiSelect, MultiSelectChangeEvent } from '@progress/kendo-react-dropd
 import { EditorProps, IEditor } from '..';
 import { sort, unique } from 'radash';
 import { IPage, PageType } from '../../../data-access/entities/Page';
+import { ContentToolbarButtonGroup } from '../../toolbar/content-toolbar-button-group/ContentToolbarButtonGroup';
+import { ContentToolbarHorizontalButton } from '../../toolbar/content-toolbar-buttons/ContentToolbarHorizontalButton';
+import { ContentToolbarGroup } from '../../toolbar/content-toolbar-group/ContentToolbarGroup';
+import { ContentToolbarLabel } from '../../toolbar/content-toolbar-label/ContentToolbarLabel';
+import { ContentToolbarDivider } from '../../toolbar/content-toolbar-divider/ContentToolbarDivider';
 
 interface State {
     isAddLinkModalVisible: boolean;
@@ -246,6 +251,19 @@ class AddEditLinkModal extends React.PureComponent<AddLinkModalProps, AddLinkMod
     }
 }
 
+const LinksEditorHeader: React.FC<EditorProps> = (props) => {
+
+    return <>
+        <ContentToolbarGroup>
+            <ContentToolbarButtonGroup>
+                <ContentToolbarHorizontalButton icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-link-45deg'></i><i className='bi bi-plus bi-stacked-icon-action text-success'></i></div>} label='Add Link' onClick={() => void (0)} />
+            </ContentToolbarButtonGroup>
+            <ContentToolbarLabel name='Link Actions' />
+        </ContentToolbarGroup>
+        <ContentToolbarDivider />
+    </>
+}
+
 export class LinksContainer implements IEditor {
 
     stringifySearchContent = (content: ILink[]) => {
@@ -255,7 +273,7 @@ export class LinksContainer implements IEditor {
     };
 
     render = (props: EditorProps) => <LinksEditor {...props} />;
-
+    renderToolbar = (props: EditorProps) => <LinksEditorHeader {...props} />;
     getDefaultContent = () => [];
 
     parse = (page: IPage) => {

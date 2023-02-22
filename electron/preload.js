@@ -7,6 +7,7 @@ const { isFileLocked } = require("./utils");
 window.NodePouchDB = require("pouchdb");
 window.NodePouchDB.plugin(require("pouchdb-find"));
 
+console.log('userDataPath', userDataPath)
 const dbFilePath = path.join(userDataPath, "mindful-v1");
 const lockFilePath = path.join(dbFilePath, "LOCK");
 

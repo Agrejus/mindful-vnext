@@ -6,8 +6,8 @@ import { SplitterPaneProps } from '@progress/kendo-react-layout';
 import { Sections } from './sub-components/pane-content/Sections';
 import { Pages } from './sub-components/pane-content/Pages';
 import { Content } from './sub-components/pane-content/Content';
-import { SubHeader, ToolType } from './sub-components/SubHeader';
-import { Search } from './sub-components/Search';
+import { ContentToolbar } from '../../shared-components/toolbar/content-toolbar/ContentToolbar';
+import { ToolType } from './sub-components/SubHeader';
 import './Home.scss';
 import '../../../../node_modules/@progress/kendo-theme-default/dist/all.scss';
 import { IPage, PageType } from '../../data-access/entities/Page';
@@ -64,17 +64,26 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
         return null
     }
 
-    return <React.Fragment>
-        <div id="full-modal-portal"></div>
-        <SubHeader
+    return <>
+        <div>
+            <ContentToolbar
+                onChange={onContentChange}
+                page={selectedPage}
+                section={selectedSection}
+                onAddPageClick={() => void(0)}
+                onAddSectionClick={() => void(0)}
+                onDeletePageClick={() => void(0)}
+            />
+        </div>
+        {/* <SubHeader
             onNavigateToTool={w => setActiveTool(w)}
             onToggleArchivedSections={() => setShowArchivedSections(w => !w)}
             searchText={searchText}
             onSearchTextChanged={setSearchText}
             selectedPage={selectedPage}
-        />
+        /> */}
         <div className="page-container" id="home-page-container">
-            <Search searchText={searchText} />
+            {/* <Search searchText={searchText} /> */}
             <SplitPane panes={panes} orientation="horizontal">
                 <Pane className="sections-content-pane">
                     <Sections
@@ -118,5 +127,5 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
                 {renderVisibleTool()}
             </Portal>
         </div>
-    </React.Fragment>
+    </>
 }

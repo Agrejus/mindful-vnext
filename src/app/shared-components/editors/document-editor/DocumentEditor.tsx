@@ -424,7 +424,7 @@ export class DocumentContainer implements IEditor {
     };
 
     render = (props: EditorProps) => <DocumentEditor {...props} />;
-
+    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => {
         return {
             showOnlyTracked: false,

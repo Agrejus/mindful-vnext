@@ -10,6 +10,11 @@ import { EditorProps, IEditor } from '..';
 import { max } from 'radash';
 import { IPage, PageType } from '../../../data-access/entities/Page';
 import { IContextMenuItem } from '../../../../types';
+import { ContentToolbarButtonGroup } from '../../toolbar/content-toolbar-button-group/ContentToolbarButtonGroup';
+import { ContentToolbarHorizontalButton } from '../../toolbar/content-toolbar-buttons/ContentToolbarHorizontalButton';
+import { ContentToolbarDivider } from '../../toolbar/content-toolbar-divider/ContentToolbarDivider';
+import { ContentToolbarGroup } from '../../toolbar/content-toolbar-group/ContentToolbarGroup';
+import { ContentToolbarLabel } from '../../toolbar/content-toolbar-label/ContentToolbarLabel';
 
 interface State {
     deleteColumn: IColumn | null;
@@ -235,6 +240,24 @@ class KanbanEditor extends React.Component<EditorProps, State> {
     }
 }
 
+const KanbanEditorHeader: React.FC<EditorProps> = (props) => {
+
+    return <>
+        <ContentToolbarGroup>
+            <ContentToolbarButtonGroup>
+                <ContentToolbarHorizontalButton icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-card-text'></i><i className='bi bi-plus-circle-fill text-success bi-stacked-icon-action-circle'></i></div>} label='Add Card' onClick={() => void (0)} />
+                <ContentToolbarHorizontalButton icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-layout-sidebar-inset'></i><i className='bi bi-plus-circle-fill text-success bi-stacked-icon-action-circle'></i></div>} label='Add Column' onClick={() => void (0)} />
+            </ContentToolbarButtonGroup>
+            <ContentToolbarButtonGroup>
+                <ContentToolbarHorizontalButton icon={<i className='bi bi-archive'></i>} label='Show Archived Cards' onClick={() => void (0)} />
+            </ContentToolbarButtonGroup>
+            <ContentToolbarLabel name='Kanban Actions' />
+        </ContentToolbarGroup>
+        <ContentToolbarDivider />
+    </>
+}
+
+
 export class KanbanEditorContainer implements IEditor {
 
     stringifySearchContent = (content: IBoard) => {
@@ -245,7 +268,7 @@ export class KanbanEditorContainer implements IEditor {
 
 
     render = (props: EditorProps) => <KanbanEditor {...props} />;
-
+    renderToolbar = (props: EditorProps) => <KanbanEditorHeader {...props} />;
     getDefaultContent = () => {
         return {
             cards: [],

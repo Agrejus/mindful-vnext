@@ -30,7 +30,7 @@ export const SectionContainer: React.FC<ISectionContainerProps> = (props) => {
     const { children } = props;
     const [sections, setSections] = useState<ISection[]>([]);
     const [selectedSection, setSelectedSection] = useState<ISection | undefined>(undefined);
-    const [isSyncInitializing, setIsSyncInitializing] = useState<boolean>(true);
+    const [isSyncInitializing, setIsSyncInitializing] = useState<boolean>(false);
 
     const dbContextFactory = useMindfulDataContext();
 
@@ -92,8 +92,6 @@ export const SectionContainer: React.FC<ISectionContainerProps> = (props) => {
 
         setup();
 
-        
-        
         return () => {
             if (sync != null) {
                 sync.cancel();

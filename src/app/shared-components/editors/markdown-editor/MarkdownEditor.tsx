@@ -186,7 +186,7 @@ export class MarkdownContainer implements IEditor {
     };
 
     render = (props: EditorProps) => <MarkdownEditor {...props} />;
-
+    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => { return { tab: "write", content: "" } as IMarkdownProps };
 
     parse = (page: IPage) => {

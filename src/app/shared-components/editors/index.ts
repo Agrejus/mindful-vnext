@@ -24,6 +24,7 @@ export interface EditorProps {
 
 export interface IEditor {
     render: (props: EditorProps) => React.ReactNode;
+    renderToolbar: (props: EditorProps) => React.ReactNode;
     getDefaultContent: () => any;
     parse: (page: IPage) => any;
     stringify: (page: IPage) => string;
@@ -63,6 +64,22 @@ export const render = (type: PageType, props: EditorProps): React.ReactNode | nu
         return null;
     }
 }
+
+export const renderToolbar = (type: PageType, props: EditorProps): React.ReactNode | null => {
+    try {
+        const editor = editors.find(w => w.type === type);
+
+        if (!editor) {
+            return null;
+        }
+
+        return editor.renderToolbar(props);
+    } catch (ex) {
+        alert(ex)
+        return null;
+    }
+}
+
 
 export const getDisplayName = (type: PageType) => {
     const editor = editors.find(w => w.type === type);
