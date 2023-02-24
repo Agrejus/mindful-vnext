@@ -22,6 +22,10 @@ export const queuePageChange: PageUpdater = (key: string, dbContextFactory: Mind
             }));
 
             await context.pages.markDirty(...linked);
+
+            // const changes = await context.previewChanges();
+            // console.log('changes', changes)
+
             await context.saveChanges();
             const e = performance.now();
             console.log('updatePagesDebounced', e - s)

@@ -1,25 +1,27 @@
 import './TextEditor.scss';
-import React from 'react';
-import { EditorProps, IEditor } from '..';
+import React, { forwardRef, PropsWithChildren, useImperativeHandle } from 'react';
+import { EditorProps, IEditor, IEditorApi, ToolbarEditorProps } from '..';
 import { IPage, PageType } from '../../../data-access/entities/Page';
-import { Button } from '@mui/material';
 import { ContentToolbarButtonGroup } from '../../toolbar/content-toolbar-button-group/ContentToolbarButtonGroup';
 import { ContentToolbarTallButton } from '../../toolbar/content-toolbar-buttons/ContentToolbarTallButton';
 import { ContentToolbarGroup } from '../../toolbar/content-toolbar-group/ContentToolbarGroup';
 import { ContentToolbarLabel } from '../../toolbar/content-toolbar-label/ContentToolbarLabel';
+import { ILinksEditorApi } from '../links-editor/LinksEditor';
 
-interface State {
+const TextEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps>>((props, ref) => {
 
-}
+    const { content, onChange } = props;
 
-class TextEditor extends React.PureComponent<EditorProps, State> {
+    useImperativeHandle(ref, () => ({
+        stop: async () => {
+          
+        }
+    }), [])
 
-    render() {
-        return <div className="text-editor">
-            <textarea value={this.props.content} onChange={e => this.props.onChange(e.target.value)} />
-        </div>
-    }
-}
+    return <div className="text-editor">
+        <textarea value={content} onChange={e => onChange(e.target.value)} />
+    </div>
+})
 
 const TextEditorHeader: React.FC<EditorProps> = (props) => {
 
@@ -33,22 +35,14 @@ const TextEditorHeader: React.FC<EditorProps> = (props) => {
     </>
 }
 
-export class TextEditorContainer implements IEditor {
-    stringifySearchContent = (content: string) => content;
-    render = (props: EditorProps) => <TextEditor {...props} />;
-    renderToolbar = (props: EditorProps) => <TextEditorHeader {...props} />;
-
-    getDefaultContent = () => "";
-
-    parse = (page: IPage) => {
-        return page.content;
-    }
-
-    stringify = (page: IPage) => {
-        return page.content;
-    }
-
-    type = PageType.PlainText;
-    icon = "bi bi-file-text";
-    displayName = "Plain Text";
+export const textEditor: IEditor<EditorProps, IEditorApi> = {
+    stringifySearchContent: (content: string) => content,
+    getComponent: () => TextEditor,
+    renderToolbar: (props: ToolbarEditorProps) => <TextEditorHeader {...props} />,
+    getDefaultContent: () => "",
+    parse: (page: IPage) => page.content,
+    stringify: (page: IPage) => page.content,
+    type: PageType.PlainText,
+    icon: "bi bi-file-text",
+    displayName : "Plain Text"
 }

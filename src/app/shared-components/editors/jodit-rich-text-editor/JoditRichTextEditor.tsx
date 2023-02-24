@@ -1,22 +1,19 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, PropsWithChildren, forwardRef } from 'react';
 import JoditEditor from "jodit-pro-react";
-import { EditorProps, IEditor } from '..';
+import { EditorProps, IEditor, IEditorApi, ToolbarEditorProps } from '..';
 import { IPage, PageType } from '../../../data-access/entities/Page';
 import { debounce, throttle } from 'radash';
 import './JoditRichTextEditor.scss';
+import { ILinksEditorApi } from '../links-editor/LinksEditor';
 
 // move to external component so we can click away and get updates
 export const queueContentChange = debounce({ delay: 600 }, throttle({ interval: 600 }, async (content: string, onChange: (content: any) => void) => {
     onChange(content);
 }))
 
-export interface IJoditRichTextEditorProps extends EditorProps {
-    showToolbar: boolean
-}
+const JoditRichTextEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps>>((props, ref) => {
 
-const JoditRichTextEditor: React.FunctionComponent<IJoditRichTextEditorProps> = (props) => {
-
-    const { onChange, showToolbar } = props;
+    const { onChange } = props;
     const editor = useRef<JoditEditor>(null)
     const [content, setContent] = useState(props.content);
 
@@ -28,7 +25,7 @@ const JoditRichTextEditor: React.FunctionComponent<IJoditRichTextEditorProps> = 
         showCharsCounter: false,
         showWordsCounter: false,
         showXPathInStatusbar: false,
-        toolbar: showToolbar,
+        toolbar: true,
         allowResizeY: false,
         allowResizeX: false,
     }), [])
@@ -45,32 +42,29 @@ const JoditRichTextEditor: React.FunctionComponent<IJoditRichTextEditorProps> = 
             onChange={onChange}
         />
     );
-}
+});
 
-export const JoditRichTextEditorWrapper: React.FC<IJoditRichTextEditorProps> = (props) => {
+export const JoditRichTextEditorWrapper = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps>>((props, ref) => {
 
 
     const onChange = (newContent: string) => {
         queueContentChange(newContent, props.onChange)
     }
 
-    return <JoditRichTextEditor content={props.content} onChange={onChange} showToolbar={props.showToolbar} />
-}
+    return <JoditRichTextEditor ref={ref} content={props.content} onChange={onChange} />
+});
 
+export const joditRichTextEditor: IEditor<EditorProps, IEditorApi> = {
+    stringifySearchContent: (content: any) => content,
+    getComponent: () => JoditRichTextEditorWrapper,
+    renderToolbar: (props: ToolbarEditorProps) => <div>Toolbar</div>,
+    getDefaultContent: () => "",
 
-export class JoditRichTextEditorContainer implements IEditor {
+    parse: (page: IPage) => page.content,
 
-    stringifySearchContent = (content: any) => content;
+    stringify: (page: IPage) => page.content,
 
-    render = (props: EditorProps) => <JoditRichTextEditorWrapper {...props} showToolbar={true} />;
-    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
-    getDefaultContent = () => "";
-
-    parse = (page: IPage) => page.content;
-
-    stringify = (page: IPage) => page.content;
-
-    type = PageType.RichText;
-    icon = "bi bi-file-richtext-fill";
-    displayName = "Rich Text";
+    type: PageType.RichText,
+    icon: "bi bi-file-richtext-fill",
+    displayName: "Rich Text"
 }

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { forwardRef, PropsWithChildren, useImperativeHandle, useRef, useState } from 'react';
 import { ButtonType, Modal } from '../../modal/Modal';
 import './LinksEditor.scss';
 import { MultiSelect, MultiSelectChangeEvent } from '@progress/kendo-react-dropdowns';
-import { EditorProps, IEditor } from '..';
+import { EditorProps, IEditor, ToolbarEditorProps, IEditorApi } from '..';
 import { sort, unique } from 'radash';
 import { IPage, PageType } from '../../../data-access/entities/Page';
 import { ContentToolbarButtonGroup } from '../../toolbar/content-toolbar-button-group/ContentToolbarButtonGroup';
@@ -11,13 +11,6 @@ import { ContentToolbarGroup } from '../../toolbar/content-toolbar-group/Content
 import { ContentToolbarLabel } from '../../toolbar/content-toolbar-label/ContentToolbarLabel';
 import { ContentToolbarDivider } from '../../toolbar/content-toolbar-divider/ContentToolbarDivider';
 
-interface State {
-    isAddLinkModalVisible: boolean;
-    filterText: string;
-    deleteLinkIndex: number | null;
-    editLinkIndex: number | null;
-    tagFilter: string;
-}
 
 export interface ILink {
     id: number;
@@ -27,7 +20,11 @@ export interface ILink {
     timesOpened: number;
 }
 
-const LinksEditor: React.FC<EditorProps> = (props) => {
+export interface ILinksEditorApi extends IEditorApi {
+    addLink: () => void;
+}
+
+const LinksEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps>>((props, ref) => {
 
     const { content, onChange } = props;
     const links = content as ILink[];
@@ -36,6 +33,13 @@ const LinksEditor: React.FC<EditorProps> = (props) => {
     const [filterText, setFilterText] = useState<string>('');
     const [tagFilter, setTagFilter] = useState<string>('');
     const [isAddLinkModalVisible, setIsAddLinkModalVisible] = useState<boolean>(false);
+
+    useImperativeHandle(ref, () => ({
+        addLink: () => {
+            console.log('add link click')
+            setIsAddLinkModalVisible(true);
+        }
+    }), []);
 
     const onAddEditLink = (link: ILink) => {
 
@@ -103,16 +107,6 @@ const LinksEditor: React.FC<EditorProps> = (props) => {
     }
 
     return <div className="links-container">
-        <div className="editor-toolbar">
-            <div className="editor-toolbar-row">
-                <div className="editor-toolbar-button-group">
-                    <button onClick={() => setIsAddLinkModalVisible(true)}>
-                        <i className="fas fa-plus"></i>
-                    </button>
-                </div>
-
-            </div>
-        </div>
         <div className="link-list">
             <div className="link-list-filter-container">
                 <div>
@@ -170,7 +164,7 @@ const LinksEditor: React.FC<EditorProps> = (props) => {
             nextId={links.length + 1}
         />}
     </div>
-}
+});
 
 interface AddLinkModalProps {
     onClose: () => void;
@@ -251,12 +245,12 @@ class AddEditLinkModal extends React.PureComponent<AddLinkModalProps, AddLinkMod
     }
 }
 
-const LinksEditorHeader: React.FC<EditorProps> = (props) => {
+const LinksEditorHeader: React.FC<ToolbarEditorProps<ILinksEditorApi>> = (props) => {
 
     return <>
         <ContentToolbarGroup>
             <ContentToolbarButtonGroup>
-                <ContentToolbarHorizontalButton icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-link-45deg'></i><i className='bi bi-plus bi-stacked-icon-action text-success'></i></div>} label='Add Link' onClick={() => void (0)} />
+                <ContentToolbarHorizontalButton icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-link-45deg'></i><i className='bi bi-plus bi-stacked-icon-action text-success'></i></div>} label='Add Link' onClick={props.editorApi.addLink} />
             </ContentToolbarButtonGroup>
             <ContentToolbarLabel name='Link Actions' />
         </ContentToolbarGroup>
@@ -264,27 +258,15 @@ const LinksEditorHeader: React.FC<EditorProps> = (props) => {
     </>
 }
 
-export class LinksContainer implements IEditor {
+export const linksEditor: IEditor<EditorProps, ILinksEditorApi> = {
 
-    stringifySearchContent = (content: ILink[]) => {
-        const links = content as ILink[];
-
-        return links.map(w => `${w.name} ${w.link}`).join(" ");
-    };
-
-    render = (props: EditorProps) => <LinksEditor {...props} />;
-    renderToolbar = (props: EditorProps) => <LinksEditorHeader {...props} />;
-    getDefaultContent = () => [];
-
-    parse = (page: IPage) => {
-        return JSON.parse(page.content);
-    }
-
-    stringify = (page: IPage) => {
-        return JSON.stringify(page.content);
-    }
-
-    type = PageType.Links;
-    icon = "far fa-hand-pointer";
-    displayName = "Links";
+    getComponent: () => LinksEditor,
+    stringifySearchContent: (content: ILink[]) => content.map(w => `${w.name} ${w.link}`).join(" "),
+    renderToolbar: (props: ToolbarEditorProps<ILinksEditorApi>) => <LinksEditorHeader {...props} />,
+    getDefaultContent: () => [],
+    parse: (page: IPage) => JSON.parse(page.content),
+    stringify: (page: IPage) => JSON.stringify(page.content),
+    type: PageType.Links,
+    icon: "far fa-hand-pointer",
+    displayName: "Links"
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import './DocumentEditor.scss';
 import { IPathInfo } from '../../../../types';
-import { EditorProps, IEditor } from '..';
+import { EditorProps, IEditor, ToolbarEditorProps } from '..';
 import { IPage, PageType } from '../../../data-access/entities/Page';
 
 interface State {
@@ -424,7 +424,7 @@ export class DocumentContainer implements IEditor {
     };
 
     render = (props: EditorProps) => <DocumentEditor {...props} />;
-    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
+    renderToolbar = (props: ToolbarEditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => {
         return {
             showOnlyTracked: false,

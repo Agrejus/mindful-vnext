@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Portal } from '../../shared-components/modal/Portal';
 import { Pane } from '../../shared-components/panes/Pane';
 import { SplitPane } from '../../shared-components/panes/SplitPane';
@@ -16,6 +16,7 @@ import { CSharpToTypescript } from '../../shared-components/tools/c-sharp-to-typ
 import { JsonPrettyPrint } from '../../shared-components/tools/json-pretty-print/JsonPrettyPrint';
 import { DataSource } from '../../../utilities/DataSource';
 import { DirtyPages } from './PageContainer';
+import { IEditorApi } from '../../shared-components/editors';
 
 interface IHomeProps {
     sections: ISection[]
@@ -46,6 +47,7 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
     const [activeTool, setActiveTool] = useState<ToolType | null>(null);
     const [searchText, setSearchText] = useState<string>("");
     const [showArchivedSections, setShowArchivedSections] = useState<boolean>(false);
+    const editorApi = useRef<IEditorApi>(null)
     const panes: SplitterPaneProps[] = [
         { size: '220px', min: '125px', collapsible: true },
         { size: '250px', min: '150px', collapsible: true },
@@ -64,6 +66,10 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
         return null
     }
 
+    useEffect(() => {
+        console.log(editorApi.current)
+    }, [editorApi.current])
+
     return <>
         <div>
             <ContentToolbar
@@ -73,6 +79,8 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
                 onAddPageClick={() => void(0)}
                 onAddSectionClick={() => void(0)}
                 onDeletePageClick={() => void(0)}
+                onDeleteSectionClick={() => void(0)}
+                editorApi={editorApi.current}
             />
         </div>
         {/* <SubHeader
@@ -110,6 +118,7 @@ export const Home: React.FunctionComponent<IHomeProps> = (props) => {
                         onChange={onContentChange}
                         page={selectedPage}
                         section={selectedSection}
+                        ref={editorApi}
                     />}
                 </Pane>
             </SplitPane>

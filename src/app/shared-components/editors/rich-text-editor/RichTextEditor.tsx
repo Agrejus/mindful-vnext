@@ -14,7 +14,7 @@ import htmlToDraft from 'html-to-draftjs';
 import "draft-js/dist/Draft.css";
 import 'draft-js-linkify-plugin/lib/plugin.css';
 import './RichTextEditor.scss';
-import { EditorProps, IEditor } from '..';
+import { EditorProps, IEditor, ToolbarEditorProps } from '..';
 import { IPage, PageType } from '../../../data-access/entities/Page';
 
 interface FileResult {
@@ -367,7 +367,7 @@ export class RichTextEditorContainer implements IEditor {
     stringifySearchContent = (content: EditorState) => content.getCurrentContent().getPlainText();
 
     render = (props: EditorProps) => <RichTextEditor {...props} />;
-    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
+    renderToolbar = (props: ToolbarEditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => EditorState.createEmpty();
 
     parse = (page: IPage) => {

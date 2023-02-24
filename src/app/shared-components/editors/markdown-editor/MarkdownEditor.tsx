@@ -5,8 +5,10 @@ import './MarkdownEditor.scss';
 import "../../../../../node_modules/react-mde/lib/styles/scss/react-mde-all.scss";
 import '../../../external-modules/prism/prism.css';
 import { Modal } from '../../modal/Modal';
-import { EditorProps, IEditor } from '..';
+import { EditorProps, IEditor, IEditorApi, ToolbarEditorProps } from '..';
 import { IPage, PageType } from '../../../data-access/entities/Page';
+import { forwardRef, PropsWithChildren, useEffect, useState } from 'react';
+import { ILinksEditorApi } from '../links-editor/LinksEditor';
 const Prism = require('../../../external-modules/prism/prism');
 
 type TabTypes = "write" | "preview";
@@ -14,10 +16,6 @@ type TabTypes = "write" | "preview";
 interface IMarkdownProps {
     tab: TabTypes;
     content: string;
-}
-
-interface State {
-    isLanguagesModalVisible: boolean;
 }
 
 const converter = new Showdown.Converter({
@@ -28,13 +26,14 @@ const converter = new Showdown.Converter({
 
 });
 
-class MarkdownEditor extends React.Component<EditorProps, State> {
+const MarkdownEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps>>((props, ref) => {
+    
+    const { content, onChange } = props;
+    const [isLanguagesModalVisible, setIsLanguagesModalVisible] = useState<boolean>(false)
 
-    state: State = {
-        isLanguagesModalVisible: false
-    };
+    const markdownProps = content as IMarkdownProps;
 
-    componentDidMount() {
+    useEffect(() => {
         const elements = document.getElementsByClassName("mde-text");
 
         if (elements && elements.length > 0) {
@@ -52,19 +51,19 @@ class MarkdownEditor extends React.Component<EditorProps, State> {
                     e.target.selectionStart = e.target.selectionEnd = start + 1;
 
                     // make sure we save our changes
-                    this.onChange(e.target.value);
+                    handleChange(e.target.value);
                 }
             });
         }
-    }
+    }, [])
 
-    onTabChange = (tab: TabTypes) => {
-        const markdownProps = this.props.content as IMarkdownProps;
+    const onTabChange = (tab: TabTypes) => {
+        const markdownProps = content as IMarkdownProps;
         markdownProps.tab = tab;
-        this.props.onChange(markdownProps);
+        onChange(markdownProps);
     }
 
-    save: SaveImageHandler = async function* (data: ArrayBuffer) {
+    const save: SaveImageHandler = async function* (data: ArrayBuffer) {
         // Promise that waits for "time" milliseconds
         const wait = function (time: number) {
             return new Promise((a: any, r) => {
@@ -86,13 +85,13 @@ class MarkdownEditor extends React.Component<EditorProps, State> {
         return true;
     }
 
-    onChange = (value: string) => {
-        const markdownProps = this.props.content as IMarkdownProps;
+    const handleChange = (value: string) => {
+        const markdownProps = content as IMarkdownProps;
         markdownProps.content = value;
-        this.props.onChange(markdownProps);
+        onChange(markdownProps);
     }
 
-    highlight = (markdown: string) => {
+    const highlight = (markdown: string) => {
 
         try {
             let html = converter.makeHtml(markdown);
@@ -121,83 +120,69 @@ class MarkdownEditor extends React.Component<EditorProps, State> {
                 })
             }
     
-            return this.decodeHtml(html);
+            return decodeHtml(html);
         } catch (e) {
             return "MARKDOWN GENERATION ERROR";
         }
     }
     
-    decodeHtml = (html: string) => {
+    const decodeHtml = (html: string) => {
         var txt = document.createElement("textarea");
         txt.innerHTML = html;
         return txt.value;
     }
 
-    languagesCommand: Command = {
+    const languagesCommand: Command = {
         icon: () => <span>Languages</span>,
         execute: ({ initialState, textApi }) => {
-            this.setState({ isLanguagesModalVisible: true })
+            setIsLanguagesModalVisible(true);
         }
     }
 
-    render() {
-        const markdownProps = this.props.content as IMarkdownProps;
-
-        return <React.Fragment>
-            <ReactMde
-                commands={{ "languages": this.languagesCommand }}
-                classes={{ reactMde: "markdown-editor", toolbar: "editor-toolbar" }}
-                toolbarCommands={[["languages", "bold", "italic"]]}
-                value={markdownProps.content}
-                onChange={this.onChange}
-                selectedTab={markdownProps.tab}
-                onTabChange={this.onTabChange}
-                generateMarkdownPreview={markdown =>
-                    Promise.resolve(this.highlight(markdown))
+    return <>
+        <ReactMde
+            commands={{ "languages": languagesCommand }}
+            classes={{ reactMde: "markdown-editor", toolbar: "editor-toolbar" }}
+            toolbarCommands={[["languages", "bold", "italic"]]}
+            value={markdownProps.content}
+            onChange={handleChange}
+            selectedTab={markdownProps.tab}
+            onTabChange={onTabChange}
+            generateMarkdownPreview={markdown =>
+                Promise.resolve(highlight(markdown))
+            }
+            childProps={{
+                writeButton: {
+                    tabIndex: -1
                 }
-                childProps={{
-                    writeButton: {
-                        tabIndex: -1
-                    }
-                }}
-                paste={{
-                    saveImage: this.save
-                }}
-            />
-            {this.state.isLanguagesModalVisible === true && <Modal
-                buttons={["Ok"]}
-                onClick={() => this.setState({ isLanguagesModalVisible: false })}
-                title="Languages"
-            >
-                <ul>
-                    {
-                        Object.keys(Prism.languages).sort().map(w => <li key={w}>{w}</li>)
-                    }
-                </ul>
-            </Modal>}
-        </React.Fragment>
-    }
-}
+            }}
+            paste={{
+                saveImage: save
+            }}
+        />
+        {isLanguagesModalVisible === true && <Modal
+            buttons={["Ok"]}
+            onClick={() => setIsLanguagesModalVisible(false)}
+            title="Languages"
+        >
+            <ul>
+                {
+                    Object.keys(Prism.languages).sort().map(w => <li key={w}>{w}</li>)
+                }
+            </ul>
+        </Modal>}
+    </>
+})
 
-export class MarkdownContainer implements IEditor {
+export const markdownEditor: IEditor<EditorProps, IEditorApi> = {
+    stringifySearchContent: (content: IMarkdownProps) => content.content,
+    getComponent: () => MarkdownEditor,
+    renderToolbar :(props: ToolbarEditorProps) => <div>Toolbar</div>,
+    getDefaultContent : () => ({ tab: "write", content: "" } as IMarkdownProps),
 
-    stringifySearchContent = (content: IMarkdownProps) => {
-        return content.content;
-    };
-
-    render = (props: EditorProps) => <MarkdownEditor {...props} />;
-    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
-    getDefaultContent = () => { return { tab: "write", content: "" } as IMarkdownProps };
-
-    parse = (page: IPage) => {
-        return JSON.parse(page.content);
-    }
-
-    stringify = (page: IPage) => {
-        return JSON.stringify(page.content);
-    }
-
-    type = PageType.Markdown;
-    icon = "bi bi-markdown";
-    displayName = "Markdown";
+    parse : (page: IPage) => JSON.parse(page.content),
+    stringify : (page: IPage) => JSON.stringify(page.content),
+    type : PageType.Markdown,
+    icon : "bi bi-markdown",
+    displayName : "Markdown"
 }

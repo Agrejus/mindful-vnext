@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { forwardRef, PropsWithChildren, useState } from 'react';
 import './NotepadEditor.scss';
 import { ButtonType, Modal } from '../../modal/Modal';
-import { EditorProps, IEditor } from '..';
+import { EditorProps, IEditor, IEditorApi, ToolbarEditorProps } from '..';
 import { IPage, PageType } from '../../../data-access/entities/Page';
 import SortableList from "react-easy-sort";
 import { arrayMoveImmutable } from "array-move";
@@ -10,6 +10,7 @@ import { RenameModal } from '../../modal/RenameModal';
 import { EditorHeader } from '../../header/EditorHeader';
 import { JoditRichTextEditorWrapper } from '../jodit-rich-text-editor/JoditRichTextEditor';
 import { sort } from 'radash';
+import { ILinksEditorApi } from '../links-editor/LinksEditor';
 
 export interface INote {
     isSelected: boolean;
@@ -21,7 +22,7 @@ export interface INote {
 
 type Notes = { [key: number]: INote };
 
-const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
+const NotepadEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps>>((props, ref) => {
 
     const { content } = props;
     const notes = content as Notes;
@@ -137,21 +138,19 @@ const NotepadEditor: React.FunctionComponent<EditorProps> = (props) => {
             onSave={e => onTitleChange(e, renameNote.id)}
         />}
     </div>
-}
+})
 
-export class NotepadContainer implements IEditor {
+export const notepadEditor: IEditor<EditorProps, IEditorApi> = {
+    stringifySearchContent: (content: any) => "",
+    getComponent: () => NotepadEditor,
+    renderToolbar: (props: ToolbarEditorProps) => <div>Toolbar</div>,
+    getDefaultContent: () => [],
 
-    stringifySearchContent = (content: any) => "";
+    parse: (page: IPage) => JSON.parse(page.content),
 
-    render = (props: EditorProps) => <NotepadEditor {...props} />;
-    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
-    getDefaultContent = () => [];
+    stringify: (page: IPage) => JSON.stringify(page.content),
 
-    parse = (page: IPage) => JSON.parse(page.content);
-
-    stringify = (page: IPage) => JSON.stringify(page.content);
-
-    type = PageType.Notepad;
-    icon = "far fa-sticky-note";
-    displayName = "Notepad";
+    type: PageType.Notepad,
+    icon: "far fa-sticky-note",
+    displayName: "Notepad"
 }

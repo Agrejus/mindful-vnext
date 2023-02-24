@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { getDisplayName, render } from '../../../../shared-components/editors';
+import React, { forwardRef, PropsWithChildren, useState } from 'react';
+import { getDisplayName, IEditorApi, render } from '../../../../shared-components/editors';
 import { allWidgets, isAllowed } from '../../../../widgets/section-widget';
 import { AddWidgetModal } from '../../../../shared-components/modal/AddWidgetModal';
 import { HoverExpandButton } from '../../../../shared-components/buttons/HoverExpandButton';
@@ -13,7 +13,7 @@ interface IContentProps {
     section: ISection;
 }
 
-export const Content: React.FunctionComponent<IContentProps> = (props) => {
+export const Content = forwardRef<IEditorApi, PropsWithChildren<IContentProps>>((props, ref) => {
     const [isWdigetModalVisible, setIsWdigetModalVisible] = useState(false);
     const { onChange, page, section } = props;
 
@@ -24,6 +24,11 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
     const areWidgetsAvailable = allWidgets.some(w => isAllowed(w.type, page.pageType));
     const icon = section?.widgets != null && section.widgets.length > 0 ? "bi bi-app-indicator" : "bi bi-app";
     const pageTitlePrefix = getDisplayName(page.pageType);
+    const contentProps = {
+        content: page.content,
+        onChange: onChange
+    }
+    const Component = render(page.pageType, contentProps, ref);
 
     return <div className="page-content-pane">
         {/* {!!page.pageName && <div className="page-content-pane-title">
@@ -35,10 +40,8 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
             <small>{moment(page.createDateTime).format('dddd, MMMM Do YYYY, h:mm A')}</small>
             <hr />
         </div>} */}
-        {render(page.pageType, {
-            content: page.content,
-            onChange: onChange
-        })}
+        {Component && <Component {...contentProps} ref={ref}/>}
+        {/* {render(page.pageType, contentProps, ref)} */}
         {
             isWdigetModalVisible && section && <AddWidgetModal
                 titlePrefix={pageTitlePrefix}
@@ -48,4 +51,4 @@ export const Content: React.FunctionComponent<IContentProps> = (props) => {
             />
         }
     </div>
-}
+});

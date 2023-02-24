@@ -1,6 +1,6 @@
 import React from 'react';
 import './AppsEditor.scss';
-import { EditorProps, IEditor } from '..';
+import { EditorProps, IEditor, ToolbarEditorProps } from '..';
 import { getFileNameWithoutExtension, getNextId } from '../../../../utilities/helpers';
 import { fileDialog } from '../../../external-modules/FileDialog';
 import { getIcon } from '../../../external-modules/icon-extractor';
@@ -190,7 +190,7 @@ class RenameModal extends React.PureComponent<RenameModalProps, RenameModalState
 export class AppsEditorContainer implements IEditor {
     stringifySearchContent = (content: any) => "";
     render = (props: EditorProps) => <Editor {...props} />;
-    renderToolbar = (props: EditorProps) => <div>Toolbar</div>;
+    renderToolbar = (props: ToolbarEditorProps) => <div>Toolbar</div>;
     getDefaultContent = () => { return { apps: [] } as IContainer; };
 
     parse = (page: IPage) => {

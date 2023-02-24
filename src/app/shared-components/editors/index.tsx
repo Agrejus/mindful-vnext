@@ -1,13 +1,15 @@
+import React from 'react';
 import { IPage, PageType } from '../../data-access/entities/Page';
-import { TextEditorContainer } from './text-editor/TextEditor';
+import { textEditor } from './text-editor/TextEditor';
 import { AppsEditorContainer } from './apps-editor/AppsEditor';
 import { DocumentContainer } from './document-editor/DocumentEditor';
-import { KanbanEditorContainer } from './kanban-editor/KanbanEditor';
-import { NotepadContainer } from './notepad-editor/NotepadEditor';
-import { LinksContainer } from './links-editor/LinksEditor';
+import { kanbanEditor } from './kanban-editor/KanbanEditor';
+import { notepadEditor } from './notepad-editor/NotepadEditor';
+import { linksEditor } from './links-editor/LinksEditor';
 import { RichTextEditorContainer } from './rich-text-editor/RichTextEditor';
-import { MarkdownContainer } from './markdown-editor/MarkdownEditor';
-import { JoditRichTextEditorContainer } from './jodit-rich-text-editor/JoditRichTextEditor';
+import { markdownEditor } from './markdown-editor/MarkdownEditor';
+import { joditRichTextEditor } from './jodit-rich-text-editor/JoditRichTextEditor';
+import { PropsWithChildren } from 'react';
 
 export type Action = () => void;
 
@@ -16,15 +18,26 @@ export interface IDomActionable {
     action: Action;
 }
 
-export interface EditorProps {
-    content: any;
-    onChange: (content: any, sum?: number) => void;
+export interface EditorProps extends EditorPropsBase {
     registerDomClickActions?: (actions: IDomActionable[]) => void;
 }
 
-export interface IEditor {
-    render: (props: EditorProps) => React.ReactNode;
-    renderToolbar: (props: EditorProps) => React.ReactNode;
+interface EditorPropsBase {
+    content: any;
+    onChange: (content: any, sum?: number) => void;
+}
+
+export interface ToolbarEditorProps<TEditorApi extends IEditorApi> extends EditorPropsBase {
+    editorApi: TEditorApi;
+}
+
+export interface IEditorApi {
+
+}
+
+export interface IEditor<TProps extends EditorProps, TEditorApi extends IEditorApi> {
+    getComponent(): React.ForwardRefExoticComponent<TProps & { children?: React.ReactNode; } & React.RefAttributes<TEditorApi>>;
+    renderToolbar: (props: ToolbarEditorProps<TEditorApi>) => React.ReactNode;
     getDefaultContent: () => any;
     parse: (page: IPage) => any;
     stringify: (page: IPage) => string;
@@ -37,36 +50,37 @@ export interface IEditor {
     // render tile?
 }
 
-export const editors: IEditor[] = [
-    new DocumentContainer(),
-    new LinksContainer(),
-    new MarkdownContainer(),
-    new NotepadContainer(),
-    new JoditRichTextEditorContainer(),
-    new TextEditorContainer(),
+export const editors: IEditor<EditorProps, any>[] = [
+    linksEditor,
+    textEditor,
+    markdownEditor,
+    notepadEditor,
+    joditRichTextEditor,
     // new VisualStudioEnvironmentEditor(),
-    new KanbanEditorContainer(),
+    kanbanEditor,
     // new TaskEditorContainer(),
-    new AppsEditorContainer()
+    // new AppsEditorContainer()
 ];
 
-export const render = (type: PageType, props: EditorProps): React.ReactNode | null => {
+export const render = (type: PageType, props: EditorProps, ref: React.ForwardedRef<IEditorApi>)=> {
     try {
         const editor = editors.find(w => w.type === type);
 
         if (!editor) {
             return null;
         }
+        return editor.getComponent();
 
-        return editor.render(props);
+        //return <Component {...props} ref={ref}/>;
     } catch (ex) {
         alert(ex)
         return null;
     }
 }
 
-export const renderToolbar = (type: PageType, props: EditorProps): React.ReactNode | null => {
+export const renderToolbar = (type: PageType, props: ToolbarEditorProps<IEditorApi>): React.ReactNode | null => {
     try {
+
         const editor = editors.find(w => w.type === type);
 
         if (!editor) {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderToolbar } from '../../editors';
+import { IEditorApi, renderToolbar } from '../../editors';
 import { ISection } from '../../../data-access/entities/Section';
 import { IPage } from '../../../data-access/entities/Page';
 import './ContentToolbar.scss';
@@ -13,21 +13,22 @@ import { ContentToolbarDivider } from '../content-toolbar-divider/ContentToolbar
 
 interface IContentToolbarProps {
     onChange: (content: any) => void;
+    editorApi: IEditorApi | null;
     page?: IPage;
     section?: ISection;
     onAddPageClick: () => void;
     onAddSectionClick: () => void;
     onDeletePageClick: () => void;
+    onDeleteSectionClick: () => void;
 }
 
 export const ContentToolbar: React.FunctionComponent<IContentToolbarProps> = (props) => {
 
-    const { onChange, page } = props;
-
+    const { onChange, page, editorApi } = props;
     return <div className="page-content-toolbar-pane">
         <ContentToolbarGroup>
             <ContentToolbarButtonGroup>
-                <ContentToolbarTallButton icon={<i className='bi bi-folder-plus'></i>} label='New Section' onClick={() => void (0)} />
+                <ContentToolbarTallButton icon={<i className='bi bi-folder-plus'></i>} label='New Section' onClick={() => console.log(editorApi)} />
                 <ContentToolbarTallButton icon={<i className='bi bi-x-lg text-delete'></i>} label='Delete Section' onClick={() => void (0)} />
             </ContentToolbarButtonGroup>
             <ContentToolbarLabel name='Section Actions' />
@@ -35,15 +36,16 @@ export const ContentToolbar: React.FunctionComponent<IContentToolbarProps> = (pr
         <ContentToolbarDivider />
         <ContentToolbarGroup>
             <ContentToolbarButtonGroup>
-                <ContentToolbarTallDropdownButton icon={<i className='bi bi-file-earmark-plus'></i>} label='New Page' onClick={() => void (0)} />
+                <ContentToolbarTallDropdownButton icon={<i className='bi bi-file-earmark-plus'></i>} label='New Page' onClick={() => void(0)} />
                 <ContentToolbarTallButton icon={<i className='bi bi-x-lg text-delete'></i>} label='Delete Page' onClick={() => void (0)} />
             </ContentToolbarButtonGroup>
             <ContentToolbarLabel name='Page Actions' />
         </ContentToolbarGroup>
         <ContentToolbarDivider />
-        {page && renderToolbar(page.pageType, {
+        {page && editorApi && renderToolbar(page.pageType, {
             content: page.content,
-            onChange: onChange
+            onChange: onChange,
+            editorApi
         })}
     </div>
 }
