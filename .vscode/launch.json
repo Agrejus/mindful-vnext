@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Electron",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/electron",
+      "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron",
+      "env": {
+        "ELECTRON_ENV": "native"
+      },
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/electron/node_modules/.bin/electron.cmd"
+      },
+      "args": [
+        "."
+      ],
+      "outputCapture": "std"
+    }
+  ]
+}
