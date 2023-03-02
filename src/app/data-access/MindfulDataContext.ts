@@ -6,6 +6,7 @@ import { IPage } from "./entities/Page";
 import { ISection } from "./entities/Section";
 import PouchDB from 'pouchdb';
 import pako from "pako";
+import { debounce, sort, throttle } from 'radash';
 
 export enum MindfulDocumentTypes {
     Notifications = "Notifications",
@@ -13,7 +14,25 @@ export enum MindfulDocumentTypes {
     Sections = "Sections",
 }
 
+const replicate = debounce({ delay: 5000 }, throttle({ interval: 5000 }, async (context: MindfulDataContext) => {
+    return PouchDB.replicate(context.getDb(), context.getRemoteDb(), {
+        live: false,
+        retry: true,
+        checkpoint: "source",
+    }).then(x => {
+        console.log('replication done', x)
+    });
+}));
+
 export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
+
+    getDb() {
+        return this.createDb();
+    }
+
+    getRemoteDb() {
+        return this._remoteDb;
+    }
 
     protected async doWork<T>(action: (db: PouchDB.Database) => Promise<T>, shouldClose: boolean = true) {
         const db = this.createDb();
@@ -24,8 +43,38 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
         return result;
     }
 
+    private _remoteDb = new PouchDB('https://wandering-resonance-42623.pktriot.net/mindful-v1', {
+        skip_setup: true,
+        fetch: (url, options) => {
+            if (options?.method === "POST" || options?.method === "PUT") {
+
+                if (options?.headers && options?.body) {
+
+                    const body = typeof options.body === "string" ? pako.gzip(options.body) : pako.gzip(JSON.stringify(options.body))
+
+                    if (body.length > 128) {    
+                        const zippedBody = pako.gzip(options.body as any);
+                        const request = new Request(url, { ...options, body: zippedBody }) as Request;
+
+                        request.headers.append('Authorization', `Basic ${Buffer.from("admin:9EUXfpyEiMFUhQtAGVkyi0thh4QTmG").toString('base64')}`);
+                        request.headers.append('Content-Encoding', 'gzip');
+
+                        return PouchDB.fetch(request)
+                    }
+                }
+            }
+
+            const request = new Request(url, options) as Request;
+            request.headers.append('Authorization', `Basic ${Buffer.from("admin:9EUXfpyEiMFUhQtAGVkyi0thh4QTmG").toString('base64')}`);
+
+            return PouchDB.fetch(request);
+        }
+    });
+
+
+
     async saveChanges() {
-        console.log('saveChanges');
+        replicate(this);
         return super.saveChanges();
     }
 
@@ -38,61 +87,58 @@ export class MindfulDataContext extends DataContext<MindfulDocumentTypes> {
         error?: (error: any) => void,
     }) {
         let delay = 0;
-        const remoteDb = new PouchDB('https://wandering-resonance-42623.pktriot.net/mindful-v1', {
-            skip_setup: true,
-            auth: {
-                username: "admin",
-                password: "9EUXfpyEiMFUhQtAGVkyi0thh4QTmG"
-            }
-            // fetch: (url, options) => {
-            //     // if (options?.method === "POST" || options?.method === "PUT") {
-
-            //     //     if (options?.headers && options?.body) {
-
-            //     //         const zippedBody = pako.gzip(options.body as any);
-            //     //         const request = new Request(url, { ...options, body: zippedBody }) as Request;
-
-            //     //         request.headers.append('Content-Encoding', 'gzip');
-
-            //     //         return fetch(request)
-            //     //     }
-            //     // }
-
-            //     const request = new Request(url, options) as Request;
-            //     request.headers.append('Authorization', `Basic ${Buffer.from("admin:admin").toString('base64')}`);
-
-            //     return fetch(request);
-            // }
-        });
-
-        const options: PouchDB.Replication.ReplicateOptions & {
-            style: "main_only"
-        } = {
+        const options: PouchDB.Replication.SyncOptions & { style: "main_only" } = {
             style: "main_only",
-            live: true,
-            retry: true,
-            checkpoint: "source",
-            batch_size: 100,
-            batches_limit: 10,
-            timeout: 30000,
-            back_off_function: () => {
-                if (delay === 0) {
-                    delay = 1000;
-                    return 1000; // start with 1 second
-                }
+            // live: true,
+            // retry: true,
+            // checkpoint: "source",
+            // batch_size: 100,
+            // batches_limit: 10,
+            // timeout: 30000,
+            // back_off_function: () => {
+            //     if (delay === 0) {
+            //         delay = 1000;
+            //         return 1000; // start with 1 second
+            //     }
 
-                if (delay < 10000) {
-                    delay = delay * 1.2;
-                    return delay; // increase a little bit at a time
-                }
+            //     if (delay < 10000) {
+            //         delay = delay * 1.2;
+            //         return delay; // increase a little bit at a time
+            //     }
 
-                delay = 10000;
-                return delay; // don't go over 10 seconds
+            //     delay = 10000;
+            //     return delay; // don't go over 10 seconds
+            // }
+            push: {
+                live: false
+            },
+            pull: {
+                live: true,
+                retry: true,
+                checkpoint: "source",
+                batch_size: 100,
+                batches_limit: 10,
+                timeout: 30000,
+                back_off_function: () => {
+                    if (delay === 0) {
+                        delay = 1000;
+                        return 1000; // start with 1 second
+                    }
+
+                    if (delay < 10000) {
+                        delay = delay * 1.2;
+                        return delay; // increase a little bit at a time
+                    }
+
+                    delay = 10000;
+                    return delay; // don't go over 10 seconds
+                }
             }
+
         }
 
         return this.doWork(async w => {
-            const sync = w.sync(remoteDb, options).on('change', (info) => {
+            const sync = w.sync(this._remoteDb, options).on('change', (info) => {
                 delay = 0;
                 // handle change
                 if (callbacks?.change) {
