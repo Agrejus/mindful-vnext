@@ -1,20 +1,16 @@
 {
   "compilerOptions": {
-    "outDir": "./build",
-    "sourceMap": true,
-    "noImplicitAny": true,
-    "module": "commonjs",
-    "target": "es6",
-    "jsx": "react",
     "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "allowJs": true,
-    "resolveJsonModule": true
-  },
-  "include": [
-    "./src/*"
-  ],
-  "exclude": [
-    "./config/*.md"
-  ]
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "types": ["vite/client"],
+    "noEmit": true,
+    "isolatedModules": true,
+    "baseUrl": "./"
+  }
 }

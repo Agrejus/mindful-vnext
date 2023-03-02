@@ -10,3 +10,15 @@ $light-green: #8DE969;
 
 $hover: #BCD8C1;
 $light-gray: #0000005e;
+
+.text-edit, .text-success {
+    color: darkgreen;
+}
+
+.text-delete, .text-danger {
+    color: #9c0000;
+}
+
+.text-default {
+    color: black;
+}

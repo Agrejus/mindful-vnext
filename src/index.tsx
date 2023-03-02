@@ -1,11 +1,16 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { App } from './app/App';
-import './index.scss';
-import '@szhsin/react-menu/dist/index.css';
-import '@szhsin/react-menu/dist/transitions/slide.css';
+/* @refresh reload */
+import { render } from 'solid-js/web';
 
-ReactDOM.render(
-	<App />,
-	document.getElementById("root")
-)
+import './index.scss';
+import { App } from './App';
+import { Router, hashIntegration } from "@solidjs/router";
+
+const root = document.getElementById('root');
+
+if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
+	throw new Error(
+		'Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?',
+	);
+}
+
+render(() => <Router source={hashIntegration()}><App /></Router>, root!);
