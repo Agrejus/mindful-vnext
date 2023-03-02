@@ -106,7 +106,7 @@ export const Sections: React.FunctionComponent<ISectionsProps> = (props) => {
             />}
             onDragOver={onSectionDragOver}
         />}
-        <button className="nav-button nav-button-add" onClick={() => setIsCreatingNewSection(true)}><i className="bi bi-plus icon-md"></i>&nbsp;Add Section</button>
+        {/* <button className="nav-button nav-button-add" onClick={() => setIsCreatingNewSection(true)}><i className="bi bi-plus icon-md"></i>&nbsp;Add Section</button> */}
         {deleteSection != null && <Modal
             buttons={["Yes", "Cancel"]}
             onClick={type => handleDeleteSection(type, deleteSection._id)}

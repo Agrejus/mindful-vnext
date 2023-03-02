@@ -223,7 +223,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
                 />
             }
         </div>
-        <div className="btn-group dropup nav-button nav-button-add nav-button-split pages-add-btn-group">
+        {/* <div className="btn-group dropup nav-button nav-button-add nav-button-split pages-add-btn-group">
             <button type="button" className="" onClick={() => onCreateNewPage("New Page", PageType.PlainText)}>
                 <i className="bi bi-plus icon-md"></i>&nbsp;Add Page
             </button>
@@ -233,7 +233,7 @@ export const Pages: React.FunctionComponent<IPagesProps> = (props) => {
             <div className={menuClassNames.join(' ')}>
                 {editors.map((w, i) => <a key={`add-page-menu-${i}`} onClick={() => setNewPageType(w.type)}><i className={w.icon}></i>&emsp;Add {w.displayName} Page</a>)}
             </div>
-        </div>
+        </div> */}
         {deletePage && <DeletePageModal
             all={pages.shallow().all()}
             page={deletePage}

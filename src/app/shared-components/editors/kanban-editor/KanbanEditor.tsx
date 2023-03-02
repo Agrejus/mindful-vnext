@@ -1,4 +1,4 @@
-import React, { forwardRef, PropsWithChildren, useState } from 'react';
+import React, { forwardRef, PropsWithChildren, useImperativeHandle, useState } from 'react';
 import './KanbanEditor.scss';
 import { SortContainer } from './columns/sorting/SortContainer';
 import { IBoard, ICard, IColumn } from './Sorting';
@@ -10,14 +10,18 @@ import { EditorProps, IEditor, IEditorApi, ToolbarEditorProps } from '..';
 import { max } from 'radash';
 import { IPage, PageType } from '../../../data-access/entities/Page';
 import { IContextMenuItem } from '../../../../types';
-import { ContentToolbarButtonGroup } from '../../toolbar/content-toolbar-button-group/ContentToolbarButtonGroup';
-import { ContentToolbarHorizontalButton } from '../../toolbar/content-toolbar-buttons/ContentToolbarHorizontalButton';
-import { ContentToolbarDivider } from '../../toolbar/content-toolbar-divider/ContentToolbarDivider';
-import { ContentToolbarGroup } from '../../toolbar/content-toolbar-group/ContentToolbarGroup';
-import { ContentToolbarLabel } from '../../toolbar/content-toolbar-label/ContentToolbarLabel';
-import { ILinksEditorApi } from '../links-editor/LinksEditor';
+import { KanbanEditorToolbar } from './KanbanEditorToolbar';
 
-const MarkDownEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps>>((props, ref) => {
+export interface IKanbanEditorApi extends IEditorApi {
+    addColumn: () => void;
+    addCard: () => Promise<void>;
+    deleteColumn: () => void;
+    deleteCard: () => void;
+    showArchivedCards: () => void;
+    hideArchivedCards: () => void;
+}
+
+const KanbanEditor = forwardRef<IKanbanEditorApi, PropsWithChildren<EditorProps>>((props, ref) => {
 
     const { content, onChange } = props;
     const board = content as IBoard;
@@ -32,6 +36,26 @@ const MarkDownEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps
     const [deleteCard, setDeleteCard] = useState<ICard | null>(null);
     const [searchText, setSearchText] = useState<string>("");
     const [showArchivedCards, setShowArchivedCards] = useState<boolean>(false);
+
+    useImperativeHandle(ref, () => ({
+        addCard: async () => {
+
+            if (columns.length === 0) {
+                return;
+            }
+
+            await onAddCard(columns[0])
+        },
+        addColumn: () => setIsAddColumnModalVisible(true),
+        deleteCard: () => {
+
+        },
+        deleteColumn: () => {
+            
+        },
+        hideArchivedCards: () => void(0),
+        showArchivedCards: () => void(0)
+    }), []);
 
     const onDragChange = (data: IColumn[]) => {
         const board: IBoard = content as IBoard;
@@ -163,22 +187,7 @@ const MarkDownEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps
 
 
     return <div className="kanban-editor">
-        <div className="editor-toolbar">
-            <div className="editor-toolbar-row">
-                <div className="editor-toolbar-button-group">
-                    <button>
-                        <i className="fas fa-plus" onClick={() => setIsAddColumnModalVisible(true)}></i>
-                    </button>
-                </div>
-                <span className="separator"></span>
-                <div className="editor-toolbar-button-group">
-                    <button>
-                        <i className="fas fa-bars fa-rotate-90"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div className="row search-row">
+        {/* <div className="row search-row">
             <div className="col-sm-8">
                 <input value={searchText} onChange={e => setSearchText(e.target.value)} className="form-control" placeholder="Search..." />
             </div>
@@ -186,7 +195,7 @@ const MarkDownEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps
                 <label>Show Archived Cards: </label>
                 <input checked={showArchivedCards} onChange={e => setShowArchivedCards(e.target.checked)} className="form-control" type="checkbox" />
             </div>
-        </div>
+        </div> */}
         <div className="column-container">
             <SortContainer
                 itemUI={(e, i) => <Column
@@ -231,30 +240,11 @@ const MarkDownEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps
     </div>
 });
 
-const KanbanEditorHeader: React.FC<EditorProps> = (props) => {
-
-    return <>
-        <ContentToolbarGroup>
-            <ContentToolbarButtonGroup>
-                <ContentToolbarHorizontalButton icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-card-text'></i><i className='bi bi-plus-circle-fill text-success bi-stacked-icon-action-circle'></i></div>} label='Add Card' onClick={() => void (0)} />
-                <ContentToolbarHorizontalButton icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-layout-sidebar-inset'></i><i className='bi bi-plus-circle-fill text-success bi-stacked-icon-action-circle'></i></div>} label='Add Column' onClick={() => void (0)} />
-            </ContentToolbarButtonGroup>
-            <ContentToolbarButtonGroup>
-                <ContentToolbarHorizontalButton disabled icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-card-text'></i><i className='bi bi-x-circle-fill text-danger bi-stacked-icon-action-circle'></i></div>} label='Remove Card' onClick={() => void (0)} />
-                <ContentToolbarHorizontalButton disabled icon={<div className='bi-stacked-icons bi-stacked-icon bi-stacked-icons-kitty-corner'><i className='bi bi-layout-sidebar-inset'></i><i className='bi bi-x-circle-fill text-danger bi-stacked-icon-action-circle'></i></div>} label='Remove Column' onClick={() => void (0)} />
-                <ContentToolbarHorizontalButton icon={<i className='bi bi-archive'></i>} label='Show Archived Cards' onClick={() => void (0)} />
-            </ContentToolbarButtonGroup>
-            <ContentToolbarLabel name='Kanban Actions' />
-        </ContentToolbarGroup>
-        <ContentToolbarDivider />
-    </>
-}
-
-export const kanbanEditor: IEditor<EditorProps, IEditorApi> = {
+export const kanbanEditor: IEditor<EditorProps, IKanbanEditorApi> = {
     stringifySearchContent: (content: IBoard) => content.cards.map(w => `${w.name} ${w.content}`).join(" "),
 
-    getComponent: () => MarkDownEditor,
-    renderToolbar: (props: ToolbarEditorProps) => <KanbanEditorHeader {...props} />,
+    getComponent: () => KanbanEditor,
+    renderToolbar: (props: ToolbarEditorProps<IKanbanEditorApi>) => <KanbanEditorToolbar {...props} />,
     getDefaultContent: () => ({ cards: [], columns: [] } as IBoard),
 
     parse: (page: IPage) => JSON.parse(page.content),

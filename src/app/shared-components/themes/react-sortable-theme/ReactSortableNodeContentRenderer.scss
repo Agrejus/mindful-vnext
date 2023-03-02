@@ -94,7 +94,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: white;
+    background-color: transparent;
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
   }
@@ -277,12 +277,13 @@
   div.rst__rowSelected {
     div.rst__rowContents {
       font-weight: 600;
-      background-color: rgb(245, 245, 245);
+      background-color: transparent;
     }
   }
   
   .rst__collapseButton,
   .rst__expandButton {
+    color: white;
     appearance: none;
     border: none;
     position: absolute;
@@ -325,6 +326,7 @@
     left: 50%;
     bottom: 0;
     height: 10px;
+    display: none;
   }
   
   .rst__rtl.rst__lineChildren::after {

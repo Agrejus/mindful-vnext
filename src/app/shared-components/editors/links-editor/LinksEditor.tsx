@@ -35,10 +35,7 @@ const LinksEditor = forwardRef<ILinksEditorApi, PropsWithChildren<EditorProps>>(
     const [isAddLinkModalVisible, setIsAddLinkModalVisible] = useState<boolean>(false);
 
     useImperativeHandle(ref, () => ({
-        addLink: () => {
-            console.log('add link click')
-            setIsAddLinkModalVisible(true);
-        }
+        addLink: () => setIsAddLinkModalVisible(true)
     }), []);
 
     const onAddEditLink = (link: ILink) => {
